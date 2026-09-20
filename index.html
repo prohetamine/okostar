@@ -314,9 +314,10 @@
     .faq details { background: #fff; border: 1px solid var(--border); border-radius: 16px; transition: border-color .2s ease, box-shadow .2s ease; }
     .faq details[open] { border-color: #bfdbfe; box-shadow: var(--shadow-sm); }
     .faq summary { display: flex; min-height: 68px; align-items: center; justify-content: space-between; gap: 20px; padding: 19px 22px; font-weight: 760; list-style: none; cursor: pointer; }
+    .faq summary::marker { content: ""; }
     .faq summary::-webkit-details-marker { display: none; }
-    .faq summary::after { display: grid; width: 28px; height: 28px; flex: none; color: var(--brand); background: #eff6ff; border-radius: 9px; content: "+"; font-size: 20px; font-weight: 500; place-items: center; transition: transform .2s ease; }
-    .faq details[open] summary::after { content: "−"; transform: rotate(180deg); }
+    .faq summary::after { display: block; width: 30px; height: 30px; flex: none; background-color: #eff6ff; background-image: linear-gradient(var(--brand), var(--brand)), linear-gradient(var(--brand), var(--brand)); background-position: center; background-repeat: no-repeat; background-size: 12px 2px, 2px 12px; border-radius: 9px; content: ""; transition: background-size .2s ease, transform .2s ease; }
+    .faq details[open] summary::after { background-size: 12px 2px, 2px 0; transform: rotate(180deg); }
     .faq details p { margin: -3px 22px 22px; padding-right: 50px; color: var(--muted); }
 
     .site-footer { padding: 48px 0 28px; background: #f8fbff; border-top: 1px solid var(--border); }
