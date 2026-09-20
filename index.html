@@ -1,6 +1,19 @@
 <!doctype html>
 <html lang="ru">
 <head>
+    <!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=112836725', 'ym');
+
+    ym(112836725, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/112836725" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Окостар — разрабатываемый интерактивный тренажёр для восстановительных занятий, связанных с мелкой моторикой и зрительно-моторной координацией. Примите участие в бесплатном тестировании.">
@@ -139,6 +152,10 @@
     @keyframes trace-line { 0%, 15% { stroke-dashoffset: 260; } 65%, 85% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -260; } }
 
     .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .drawing-library-note { display: flex; width: fit-content; align-items: center; gap: 13px; margin: -18px auto 34px; padding: 12px 18px; color: #334155; background: #fff; border: 1px solid #dbeafe; border-radius: 16px; box-shadow: var(--shadow-sm); }
+    .drawing-library-note span:first-child { display: grid; width: 36px; height: 36px; flex: none; color: #fff; background: var(--gradient); border-radius: 11px; place-items: center; }
+    .drawing-library-note svg { width: 19px; height: 19px; }
+    .drawing-library-note strong { color: #2563eb; }
     .step-card { position: relative; min-height: 440px; padding: 30px; overflow: hidden; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
     .step-number { display: inline-grid; width: 40px; height: 40px; margin-bottom: 22px; color: #fff; background: var(--gradient); border-radius: 12px; font-weight: 800; place-items: center; }
     .step-card p { margin-bottom: 28px; color: var(--muted); }
@@ -360,6 +377,7 @@
       .hero-grid { gap: 42px; }
       .hero-actions { display: grid; }
       .hero-actions .button { width: 100%; }
+      .drawing-library-note { align-items: flex-start; margin-top: -12px; }
       .tablet { border-radius: 25px; }
       .tablet-screen { border-radius: 17px; }
       .float-card--top { right: -4px; }
@@ -463,6 +481,7 @@
           <h2>Как работает Окостар</h2>
           <p>Один рисунок, одна траектория за раз — без лишних действий и сложных настроек.</p>
         </div>
+        <div class="drawing-library-note reveal"><span><svg><use href="#i-picture"/></svg></span><span>В библиотеке Окостар — <strong>6 000 рисунков</strong> разной сложности для тренировок.</span></div>
         <div class="steps">
           <article class="step-card reveal">
             <span class="step-number">1</span><h3>Выберите рисунок</h3><p>Получите интерактивное упражнение с последовательностью заданных траекторий.</p>
