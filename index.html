@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Окостар — разрабатываемый интерактивный тренажёр для восстановительных занятий, связанных с мелкой моторикой и зрительно-моторной координацией. Примите участие в бесплатном тестировании.">
+  <meta name="theme-color" content="#ffffff">
+  <title>Окостар — упражнения для восстановления мелкой моторики</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --brand: #3b82f6;
+      --brand-hover: #60a5fa;
+      --brand-soft: #dbeafe;
+      --cyan: #0ea5e9;
+      --blue-pale: #f1f7ff;
+      --background: #ffffff;
+      --background-alt: #f8fbff;
+      --card: #f1f5f9;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --success: #22c55e;
+      --warning: #facc15;
+      --danger: #ef4444;
+      --info: #38bdf8;
+      --violet: #a78bfa;
+      --gradient: linear-gradient(135deg, #3b82f6, #60a5fa);
+      --shadow-sm: 0 8px 30px rgb(15 23 42 / 7%);
+      --shadow-md: 0 24px 70px rgb(59 130 246 / 14%);
+      --radius-sm: 14px;
+      --radius-md: 22px;
+      --radius-lg: 32px;
+      --content: 1180px;
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 92px; }
+    body { margin: 0; min-width: 320px; color: var(--text); background: var(--background); font-family: var(--font); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+    body.modal-open { overflow: hidden; }
+    button, input, select, textarea { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { cursor: pointer; }
+    img, svg { display: block; max-width: 100%; }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+    :focus-visible { outline: 3px solid rgb(59 130 246 / 24%); outline-offset: 3px; }
+
+    .container { width: min(calc(100% - 40px), var(--content)); margin-inline: auto; }
+    .section { padding: 108px 0; }
+    .section--tint { background: var(--background-alt); }
+    .section--compact { padding-block: 76px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 16px; color: #2563eb; font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .eyebrow::before { width: 8px; height: 8px; background: var(--brand); border-radius: 50%; content: ""; box-shadow: 0 0 0 5px var(--brand-soft); }
+    .section-head { max-width: 720px; margin-bottom: 48px; }
+    .section-head--center { margin-inline: auto; text-align: center; }
+    .section-head--center .eyebrow { justify-content: center; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { max-width: 760px; margin-bottom: 24px; font-size: clamp(42px, 6vw, 72px); line-height: 1.02; letter-spacing: -.055em; }
+    h2 { margin-bottom: 18px; font-size: clamp(32px, 4.5vw, 50px); line-height: 1.08; letter-spacing: -.04em; }
+    h3 { margin-bottom: 10px; font-size: 20px; line-height: 1.25; letter-spacing: -.02em; }
+    .lead { color: var(--muted); font-size: clamp(18px, 2vw, 21px); line-height: 1.55; }
+    .section-head p:last-child { margin-bottom: 0; color: var(--muted); font-size: 18px; }
+    .muted { color: var(--muted); }
+
+    .button { display: inline-flex; min-height: 52px; align-items: center; justify-content: center; gap: 10px; padding: 13px 21px; color: var(--text); background: #fff; border: 1px solid var(--border); border-radius: 14px; font-weight: 750; line-height: 1.2; text-decoration: none; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease; }
+    .button:hover { border-color: #bfdbfe; box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+    .button--primary { color: #fff; background: var(--gradient); border-color: transparent; box-shadow: 0 12px 28px rgb(59 130 246 / 25%); }
+    .button--primary:hover { border-color: transparent; box-shadow: 0 16px 34px rgb(59 130 246 / 32%); }
+    .button--large { min-height: 60px; padding-inline: 28px; border-radius: 16px; }
+    .button--full { width: 100%; }
+    .button:disabled { opacity: .64; cursor: wait; transform: none; }
+    .button svg { width: 19px; height: 19px; }
+
+    .site-header { position: fixed; z-index: 50; top: 0; right: 0; left: 0; padding-top: env(safe-area-inset-top); background: rgb(255 255 255 / 82%); border-bottom: 1px solid rgb(226 232 240 / 76%); backdrop-filter: blur(18px); }
+    .header-inner { display: flex; min-height: 76px; align-items: center; justify-content: space-between; gap: 24px; }
+    .logo { display: inline-flex; align-items: center; gap: 11px; color: var(--text); font-size: 21px; font-weight: 850; letter-spacing: -.03em; text-decoration: none; }
+    .logo-mark { display: grid; width: 38px; height: 38px; overflow: hidden; color: #fff; background: var(--gradient); border-radius: 12px; box-shadow: 0 8px 20px rgb(59 130 246 / 25%); place-items: center; }
+    .logo-mark svg { width: 24px; height: 24px; }
+    .nav { display: flex; align-items: center; gap: 28px; }
+    .nav a:not(.button) { color: #475569; font-size: 14px; font-weight: 680; text-decoration: none; transition: color .2s ease; }
+    .nav a:not(.button):hover { color: var(--brand); }
+    .nav .button { min-height: 44px; padding: 11px 17px; color: #fff; }
+    .menu-button { display: none; width: 44px; height: 44px; padding: 0; background: #fff; border: 1px solid var(--border); border-radius: 12px; place-items: center; }
+    .menu-button span, .menu-button::before, .menu-button::after { display: block; width: 20px; height: 2px; background: var(--text); border-radius: 2px; content: ""; transition: transform .2s ease, opacity .2s ease; }
+    .menu-button span { margin: 4px 0; }
+    .menu-button[aria-expanded="true"] span { opacity: 0; }
+    .menu-button[aria-expanded="true"]::before { transform: translateY(6px) rotate(45deg); }
+    .menu-button[aria-expanded="true"]::after { transform: translateY(-6px) rotate(-45deg); }
+
+    .hero { position: relative; display: grid; min-height: 760px; padding: 154px 0 100px; overflow: hidden; color: #fff; background: #0f172a; align-items: center; }
+    .hero-grid { position: relative; z-index: 1; }
+    .hero-copy { max-width: 760px; }
+    .hero-copy .lead { max-width: 680px; margin-bottom: 30px; }
+    .hero .lead { color: rgb(255 255 255 / 82%); text-shadow: 0 2px 20px rgb(15 23 42 / 34%); }
+    .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+    .hero-actions .button:not(.button--primary) { color: #fff; background: rgb(255 255 255 / 12%); border-color: rgb(255 255 255 / 38%); backdrop-filter: blur(12px); }
+    .hero-actions .button:not(.button--primary):hover { background: rgb(255 255 255 / 20%); border-color: rgb(255 255 255 / 65%); }
+    .hero-note { display: flex; align-items: center; gap: 9px; margin: 24px 0 0; color: rgb(255 255 255 / 82%); font-size: 14px; }
+    .hero-note svg { width: 20px; height: 20px; flex: none; color: var(--success); }
+    .hero-disclaimer { max-width: 650px; margin: 12px 0 0; color: rgb(255 255 255 / 62%); font-size: 12px; }
+
+    .hero-media { position: absolute; z-index: 0; inset: 0; overflow: hidden; background: #172033; }
+    .hero-media::after { position: absolute; inset: 0; background: linear-gradient(90deg, rgb(7 15 31 / 92%) 0%, rgb(7 15 31 / 78%) 44%, rgb(7 15 31 / 24%) 76%, rgb(7 15 31 / 42%) 100%), linear-gradient(180deg, rgb(7 15 31 / 22%), rgb(7 15 31 / 12%) 62%, rgb(7 15 31 / 48%)); content: ""; }
+    .hero-media img, .hero-media video { width: 100%; height: 100%; object-fit: cover; }
+    .tablet { position: relative; z-index: 1; padding: 11px; background: #172033; border: 1px solid #334155; border-radius: 34px; box-shadow: 0 35px 90px rgb(15 23 42 / 24%), inset 0 0 0 1px rgb(255 255 255 / 8%); transform: rotate(1.5deg); }
+    .tablet::before { position: absolute; top: 50%; right: 4px; width: 3px; height: 40px; background: #475569; border-radius: 2px; content: ""; transform: translateY(-50%); }
+    .tablet-screen { position: relative; overflow: hidden; aspect-ratio: 4 / 3; background: #f8fbff; border-radius: 24px; }
+    .appbar { display: flex; height: 46px; align-items: center; justify-content: space-between; padding: 0 18px; background: rgb(255 255 255 / 88%); border-bottom: 1px solid var(--border); }
+    .appbar-brand { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; }
+    .appbar-brand i { width: 20px; height: 20px; background: var(--gradient); border-radius: 7px; }
+    .appbar-progress { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 10px; font-weight: 700; }
+    .appbar-progress span { width: 70px; height: 6px; overflow: hidden; background: var(--border); border-radius: 10px; }
+    .appbar-progress span::after { display: block; width: 58%; height: 100%; background: var(--gradient); border-radius: inherit; content: ""; }
+    .canvas { position: relative; height: calc(100% - 46px); background: linear-gradient(140deg, #fff, #f1f7ff); }
+    .canvas svg { width: 100%; height: 100%; }
+    .canvas .picture-line { fill: none; stroke: #cbd5e1; stroke-linecap: round; stroke-linejoin: round; stroke-width: 5; }
+    .canvas .restored { fill: none; stroke: #60a5fa; stroke-linecap: round; stroke-linejoin: round; stroke-width: 7; }
+    .canvas .guide-base { fill: none; stroke: #dbeafe; stroke-linecap: round; stroke-linejoin: round; stroke-width: 12; }
+    .canvas .guide { fill: none; stroke: #0ea5e9; stroke-dasharray: 12 10; stroke-linecap: round; stroke-linejoin: round; stroke-width: 6; animation: guide-flow 1.2s linear infinite; }
+    .canvas .hand-line { fill: none; stroke: #3b82f6; stroke-dasharray: 260; stroke-dashoffset: 260; stroke-linecap: round; stroke-linejoin: round; stroke-width: 5; animation: trace-line 4s ease-in-out infinite; }
+    .stylus { position: absolute; right: -7px; bottom: 17%; z-index: 2; width: 46%; height: 14px; background: linear-gradient(90deg, #fff 0 82%, #cbd5e1 82% 90%, #64748b 90%); border: 1px solid #cbd5e1; border-radius: 20px 3px 3px 20px; box-shadow: 0 10px 24px rgb(15 23 42 / 18%); transform: rotate(-37deg); transform-origin: right center; }
+    .float-card { position: absolute; z-index: 3; display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: rgb(255 255 255 / 92%); border: 1px solid rgb(226 232 240 / 90%); border-radius: 14px; box-shadow: var(--shadow-sm); backdrop-filter: blur(12px); }
+    .float-card--top { top: 2px; right: -14px; }
+    .float-card--bottom { bottom: -2px; left: -18px; }
+    .float-icon { display: grid; width: 34px; height: 34px; flex: none; color: #fff; background: var(--gradient); border-radius: 10px; place-items: center; }
+    .float-icon--green { background: var(--success); }
+    .float-icon svg { width: 18px; height: 18px; }
+    .float-card strong { display: block; font-size: 12px; }
+    .float-card small { display: block; color: var(--muted); font-size: 10px; }
+
+    @keyframes guide-flow { to { stroke-dashoffset: -44; } }
+    @keyframes trace-line { 0%, 15% { stroke-dashoffset: 260; } 65%, 85% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -260; } }
+
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .step-card { position: relative; min-height: 360px; padding: 30px; overflow: hidden; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
+    .step-number { display: inline-grid; width: 40px; height: 40px; margin-bottom: 22px; color: #fff; background: var(--gradient); border-radius: 12px; font-weight: 800; place-items: center; }
+    .step-card p { margin-bottom: 28px; color: var(--muted); }
+    .step-visual { position: absolute; right: 22px; bottom: 20px; left: 22px; height: 130px; overflow: hidden; background: var(--background-alt); border: 1px solid #eaf1fb; border-radius: 18px; }
+    .step-visual svg { width: 100%; height: 100%; }
+    .mini-target { fill: none; stroke: #cbd5e1; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+    .mini-active { fill: none; stroke: var(--brand); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+    .mini-guide { fill: none; stroke: var(--cyan); stroke-width: 6; stroke-dasharray: 10 9; stroke-linecap: round; animation: guide-flow 1.3s linear infinite; }
+
+    .benefit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .benefit-card { padding: 27px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+    .benefit-card:hover { border-color: #bfdbfe; box-shadow: var(--shadow-md); transform: translateY(-5px); }
+    .icon-box { display: grid; width: 48px; height: 48px; margin-bottom: 22px; color: #2563eb; background: var(--brand-soft); border-radius: 15px; place-items: center; }
+    .icon-box--cyan { color: #0284c7; background: #e0f2fe; }
+    .icon-box--violet { color: #7c3aed; background: #ede9fe; }
+    .icon-box--green { color: #15803d; background: #dcfce7; }
+    .icon-box svg { width: 25px; height: 25px; }
+    .benefit-card p { margin-bottom: 0; color: var(--muted); font-size: 15px; }
+
+    .device-panel { display: grid; grid-template-columns: .9fr 1.1fr; align-items: center; gap: 70px; padding: 60px; background: linear-gradient(135deg, #eff6ff, #f8fbff 55%, #eefaff); border: 1px solid #dbeafe; border-radius: var(--radius-lg); }
+    .device-copy .lead { margin-bottom: 28px; }
+    .device-list { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+    .device-list li { display: flex; align-items: center; gap: 11px; color: #334155; font-weight: 650; }
+    .device-list svg { width: 21px; height: 21px; flex: none; color: var(--brand); }
+    .device-art { position: relative; display: grid; min-height: 340px; place-items: center; }
+    .device-tablet { position: relative; width: min(100%, 420px); padding: 12px; background: #0f172a; border-radius: 28px; box-shadow: 0 28px 60px rgb(15 23 42 / 20%); transform: rotate(-3deg); }
+    .device-tablet > div { display: grid; aspect-ratio: 4 / 3; overflow: hidden; background: #fff; border-radius: 18px; place-items: center; }
+    .device-tablet svg { width: 80%; }
+    .device-pencil { position: absolute; right: 1%; bottom: 7%; width: 66%; height: 15px; background: linear-gradient(90deg, #fff 0 83%, #dbeafe 83% 91%, #3b82f6 91%); border: 1px solid #cbd5e1; border-radius: 20px 3px 3px 20px; box-shadow: 0 10px 20px rgb(15 23 42 / 15%); transform: rotate(-26deg); }
+
+    .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; counter-reset: testing; }
+    .timeline-item { position: relative; padding: 0 28px; counter-increment: testing; }
+    .timeline-item:first-child { padding-left: 0; }
+    .timeline-item:last-child { padding-right: 0; }
+    .timeline-item::before { display: grid; position: relative; z-index: 2; width: 48px; height: 48px; margin-bottom: 22px; color: #fff; background: var(--gradient); border: 7px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px var(--brand-soft); content: counter(testing); font-weight: 850; place-items: center; }
+    .timeline-item:not(:last-child)::after { position: absolute; z-index: 1; top: 23px; right: -2px; left: 48px; height: 2px; background: linear-gradient(90deg, var(--brand-soft), #bfdbfe); content: ""; }
+    .timeline-item p { margin-bottom: 0; color: var(--muted); font-size: 15px; }
+    .premium-banner { display: flex; align-items: center; justify-content: space-between; gap: 30px; margin-top: 54px; padding: 30px 34px; color: #fff; background: linear-gradient(130deg, #2563eb, #3b82f6 58%, #0ea5e9); border-radius: var(--radius-md); box-shadow: var(--shadow-md); }
+    .premium-banner > div { display: flex; align-items: center; gap: 18px; }
+    .premium-banner .icon-box { margin: 0; color: #fff; background: rgb(255 255 255 / 16%); }
+    .premium-banner h3 { margin-bottom: 4px; }
+    .premium-banner p { margin: 0; color: rgb(255 255 255 / 78%); }
+    .premium-label { flex: none; padding: 8px 13px; color: #1e3a8a; background: #fff; border-radius: 999px; font-size: 13px; font-weight: 850; }
+
+    .data-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 80px; align-items: start; }
+    .data-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .data-card { padding: 22px; background: #fff; border: 1px solid var(--border); border-radius: 18px; }
+    .data-card strong { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 16px; }
+    .data-card strong svg { width: 20px; height: 20px; color: var(--brand); }
+    .data-card p { margin: 0; color: var(--muted); font-size: 14px; }
+    .data-note { display: flex; gap: 12px; margin-top: 20px; padding: 16px 18px; color: #475569; background: var(--blue-pale); border-radius: 14px; font-size: 14px; }
+    .data-note svg { width: 21px; height: 21px; flex: none; color: var(--brand); }
+
+    .status-panel { display: grid; grid-template-columns: auto 1fr; gap: 24px; padding: 38px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
+    .status-panel .icon-box { margin: 0; }
+    .status-panel p { max-width: 920px; margin-bottom: 12px; color: var(--muted); }
+    .status-panel p:last-child { margin-bottom: 0; }
+
+    .form-shell { display: grid; grid-template-columns: .72fr 1.28fr; gap: 46px; align-items: start; }
+    .form-aside { position: sticky; top: 108px; }
+    .form-aside .lead { font-size: 18px; }
+    .form-points { display: grid; gap: 14px; margin-top: 30px; }
+    .form-point { display: flex; align-items: flex-start; gap: 12px; color: #475569; font-size: 14px; }
+    .form-point span { display: grid; width: 26px; height: 26px; flex: none; color: #2563eb; background: var(--brand-soft); border-radius: 8px; place-items: center; }
+    .form-point svg { width: 15px; height: 15px; }
+    .already-sent { margin-top: 24px; padding: 15px 17px; color: #166534; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; font-size: 14px; }
+    .application-card { padding: 36px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
+    .form-section { margin: 0; padding: 0 0 32px; border: 0; }
+    .form-section + .form-section { padding-top: 32px; border-top: 1px solid var(--border); }
+    .form-section:last-of-type { padding-bottom: 10px; }
+    .form-legend { width: 100%; margin-bottom: 22px; padding: 0; font-size: 18px; font-weight: 820; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 19px; }
+    .field { display: grid; align-content: start; gap: 8px; }
+    .field--full { grid-column: 1 / -1; }
+    .field label, .field-label { color: #334155; font-size: 14px; font-weight: 720; }
+    .required::after { margin-left: 3px; color: var(--danger); content: "*"; }
+    .field input, .field select, .field textarea { width: 100%; min-height: 50px; padding: 12px 14px; color: var(--text); background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; outline: 0; transition: border-color .18s ease, box-shadow .18s ease, background .18s ease; }
+    .field textarea { min-height: 110px; resize: vertical; }
+    .field input::placeholder, .field textarea::placeholder { color: #94a3b8; }
+    .field input:hover, .field select:hover, .field textarea:hover { border-color: #94a3b8; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgb(59 130 246 / 12%); }
+    .field small { color: var(--muted); font-size: 12px; }
+    .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .choice { position: relative; display: flex; min-height: 48px; align-items: center; gap: 10px; padding: 11px 13px; color: #334155; background: #fff; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; cursor: pointer; transition: border-color .18s ease, background .18s ease; }
+    .choice:hover { border-color: #bfdbfe; background: #f8fbff; }
+    .choice:has(input:checked) { color: #1d4ed8; background: #eff6ff; border-color: #93c5fd; }
+    .choice input { width: 18px; height: 18px; min-height: 0; margin: 0; padding: 0; accent-color: var(--brand); }
+    .consent { display: flex; align-items: flex-start; gap: 11px; margin: 8px 0 22px; color: var(--muted); font-size: 13px; cursor: pointer; }
+    .consent input { width: 18px; height: 18px; flex: none; margin-top: 2px; accent-color: var(--brand); }
+    .form-status { min-height: 24px; margin: 14px 0 0; font-size: 14px; }
+    .form-status--error { color: #b91c1c; }
+    .static-notice { margin-bottom: 24px; padding: 14px 16px; color: #854d0e; background: #fefce8; border: 1px solid #fef08a; border-radius: 13px; font-size: 13px; }
+    .success-state { padding: 50px 24px; text-align: center; }
+    .success-state .success-icon { display: grid; width: 68px; height: 68px; margin: 0 auto 22px; color: #fff; background: var(--success); border-radius: 22px; box-shadow: 0 12px 30px rgb(34 197 94 / 24%); place-items: center; }
+    .success-state .success-icon svg { width: 34px; height: 34px; }
+    .success-state h3 { font-size: 26px; }
+    .success-state p { max-width: 480px; margin: 0 auto 24px; color: var(--muted); }
+
+    .cooperation { position: relative; overflow: hidden; color: #fff; background: #0f172a; }
+    .cooperation::before { position: absolute; top: -180px; right: -120px; width: 480px; height: 480px; background: radial-gradient(circle, rgb(59 130 246 / 35%), transparent 68%); border-radius: 50%; content: ""; }
+    .cooperation-inner { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 40px; }
+    .cooperation-copy { max-width: 760px; }
+    .cooperation .eyebrow { color: #93c5fd; }
+    .cooperation h2 { margin-bottom: 14px; }
+    .cooperation p { margin-bottom: 0; color: #94a3b8; font-size: 18px; }
+
+    .faq { display: grid; gap: 12px; max-width: 840px; margin-inline: auto; }
+    .faq details { background: #fff; border: 1px solid var(--border); border-radius: 16px; transition: border-color .2s ease, box-shadow .2s ease; }
+    .faq details[open] { border-color: #bfdbfe; box-shadow: var(--shadow-sm); }
+    .faq summary { display: flex; min-height: 68px; align-items: center; justify-content: space-between; gap: 20px; padding: 19px 22px; font-weight: 760; list-style: none; cursor: pointer; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { display: grid; width: 28px; height: 28px; flex: none; color: var(--brand); background: #eff6ff; border-radius: 9px; content: "+"; font-size: 20px; font-weight: 500; place-items: center; transition: transform .2s ease; }
+    .faq details[open] summary::after { content: "−"; transform: rotate(180deg); }
+    .faq details p { margin: -3px 22px 22px; padding-right: 50px; color: var(--muted); }
+
+    .site-footer { padding: 48px 0 28px; background: #f8fbff; border-top: 1px solid var(--border); }
+    .footer-main { display: flex; align-items: flex-start; justify-content: space-between; gap: 40px; padding-bottom: 36px; }
+    .footer-brand { max-width: 430px; }
+    .footer-brand p { margin: 16px 0 0; color: var(--muted); font-size: 14px; }
+    .footer-nav { display: flex; flex-wrap: wrap; gap: 14px 26px; }
+    .footer-nav a { color: #475569; font-size: 14px; font-weight: 650; text-decoration: none; }
+    .footer-nav a:hover { color: var(--brand); }
+    .footer-bottom { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-top: 24px; color: var(--muted); border-top: 1px solid var(--border); font-size: 12px; }
+
+    .modal { position: fixed; z-index: 100; inset: 0; display: grid; padding: 24px; background: rgb(15 23 42 / 58%); place-items: center; backdrop-filter: blur(8px); }
+    .modal-panel { position: relative; width: min(100%, 680px); max-height: min(88dvh, 820px); overflow-y: auto; padding: 34px; background: #fff; border-radius: 26px; box-shadow: 0 32px 90px rgb(15 23 42 / 30%); }
+    .modal-close { position: absolute; top: 20px; right: 20px; display: grid; width: 42px; height: 42px; padding: 0; color: #475569; background: var(--card); border: 0; border-radius: 12px; place-items: center; }
+    .modal-close svg { width: 20px; height: 20px; }
+    .modal-head { padding-right: 50px; }
+    .modal-head h2 { margin-bottom: 9px; font-size: 30px; }
+    .modal-head p { margin-bottom: 28px; color: var(--muted); }
+
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .65s ease, transform .65s ease; }
+    .reveal.is-visible { opacity: 1; transform: none; }
+
+    @media (max-width: 980px) {
+      .section { padding: 84px 0; }
+      .hero-copy { text-align: center; }
+      .hero-copy h1, .hero-copy .lead { margin-inline: auto; }
+      .hero-actions { justify-content: center; }
+      .hero-note { justify-content: center; }
+      .hero-disclaimer { margin-inline: auto; }
+      .hero-media::after { background: linear-gradient(180deg, rgb(7 15 31 / 72%) 0%, rgb(7 15 31 / 82%) 54%, rgb(7 15 31 / 90%) 100%); }
+      .hero-media img, .hero-media video { object-position: 58% center; }
+      .benefit-grid { grid-template-columns: 1fr 1fr; }
+      .device-panel { grid-template-columns: 1fr; gap: 36px; padding: 44px; }
+      .device-art { order: -1; }
+      .timeline { grid-template-columns: 1fr 1fr; gap: 34px 0; }
+      .timeline-item:nth-child(2)::after { display: none; }
+      .data-grid { grid-template-columns: 1fr; gap: 38px; }
+      .form-shell { grid-template-columns: 1fr; }
+      .form-aside { position: static; }
+    }
+
+    @media (max-width: 760px) {
+      .container { width: min(calc(100% - 28px), var(--content)); }
+      .section { padding: 70px 0; }
+      .site-header { background: rgb(255 255 255 / 94%); }
+      .header-inner { min-height: 66px; }
+      .menu-button { display: grid; }
+      .nav { position: absolute; top: calc(100% + 1px); right: 0; left: 0; display: none; align-items: stretch; gap: 4px; padding: 14px; background: #fff; border-bottom: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+      .nav.is-open { display: grid; }
+      .nav a:not(.button) { padding: 12px; border-radius: 10px; }
+      .nav a:not(.button):hover { background: var(--background-alt); }
+      .nav .button { margin-top: 6px; }
+      .hero { min-height: 0; padding: 120px 0 74px; }
+      h1 { font-size: clamp(39px, 12vw, 57px); }
+      h2 { font-size: 34px; }
+      .hero-grid { gap: 42px; }
+      .hero-actions { display: grid; }
+      .hero-actions .button { width: 100%; }
+      .tablet { border-radius: 25px; }
+      .tablet-screen { border-radius: 17px; }
+      .float-card--top { right: -4px; }
+      .float-card--bottom { left: -4px; }
+      .stylus { display: none; }
+      .steps { grid-template-columns: 1fr; }
+      .step-card { min-height: 330px; }
+      .benefit-grid, .data-cards { grid-template-columns: 1fr; }
+      .device-panel { padding: 30px 22px; border-radius: 24px; }
+      .device-art { min-height: 260px; }
+      .timeline { grid-template-columns: 1fr; gap: 0; }
+      .timeline-item { display: grid; grid-template-columns: 48px 1fr; column-gap: 18px; padding: 0 0 34px; }
+      .timeline-item::before { grid-row: 1 / 3; margin: 0; }
+      .timeline-item:not(:last-child)::after { display: block; top: 48px; right: auto; bottom: 0; left: 23px; width: 2px; height: auto; background: linear-gradient(var(--brand-soft), #bfdbfe); }
+      .premium-banner { align-items: flex-start; padding: 26px; }
+      .premium-banner, .premium-banner > div { align-items: flex-start; }
+      .premium-banner { flex-direction: column; }
+      .status-panel { grid-template-columns: 1fr; padding: 28px; }
+      .application-card { padding: 24px 18px; border-radius: 22px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .field--full { grid-column: auto; }
+      .choice-grid { grid-template-columns: 1fr; }
+      .cooperation-inner { align-items: flex-start; flex-direction: column; }
+      .cooperation .button { width: 100%; }
+      .footer-main, .footer-bottom { align-items: flex-start; flex-direction: column; }
+      .modal { padding: 10px; }
+      .modal-panel { max-height: calc(100dvh - 20px); padding: 28px 18px; border-radius: 22px; }
+      .modal-close { top: 14px; right: 14px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+    <symbol id="i-path" viewBox="0 0 24 24"><path d="M4 18c3-9 5 1 8-8s5 1 8-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="4" cy="18" r="2" fill="currentColor"/><circle cx="20" cy="6" r="2" fill="currentColor"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 11V5a2 2 0 0 1 4 0v5-7a2 2 0 0 1 4 0v8-5a2 2 0 0 1 4 0v7c0 5-3 8-8 8H9c-3 0-5-2-6-5l-1-3a2 2 0 0 1 4-1l2 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m16 8 5-5m-4 0h4v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-control" viewBox="0 0 24 24"><path d="M4 7h10m4 0h2M4 17h2m4 0h10M14 4v6M10 14v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="14" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="17" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-tablet" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 19h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="m4 20 4.5-1 11-11a2.1 2.1 0 0 0-3-3l-11 11L4 20Zm10-13 3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-picture" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m5 18 5-5 3 3 2-2 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M20 7h-9a6 6 0 1 0 5.5 8.4M17 4l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v6m0-10h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V6l-8-3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 5.6a5.3 5.3 0 0 0-7.5 0L12 7l-1.3-1.4a5.3 5.3 0 0 0-7.5 7.5L12 22l8.8-8.9a5.3 5.3 0 0 0 0-7.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </svg>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="#top" aria-label="Окостар — на главную">
+        <span class="logo-mark"><svg><use href="#i-path"/></svg></span>
+        <span>Окостар</span>
+      </a>
+      <button class="menu-button" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="site-nav"><span></span></button>
+      <nav class="nav" id="site-nav" aria-label="Основная навигация">
+        <a href="#how">Как это работает</a>
+        <a href="#testing">О тестировании</a>
+        <a href="#faq">FAQ</a>
+        <a class="button button--primary" href="#application">Принять участие</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-media" aria-label="Демонстрация работы Окостар">
+        <video src="video.mp4" poster="preview.jpg" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
+      </div>
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <h1>Поддержка восстановления мелкой моторики</h1>
+          <p class="lead">Окостар создан для людей, которым важно заново развивать точность и контроль движений после инсульта, травмы руки, операции или при неврологических нарушениях. Ведите пальцем или стилусом по траектории — и шаг за шагом восстанавливайте рисунок, превращая регулярные упражнения в понятный и увлекательный процесс.</p>
+          <div class="hero-actions">
+            <a class="button button--primary button--large" href="#application">Принять участие в тестировании <svg><use href="#i-arrow"/></svg></a>
+            <a class="button button--large" href="#how">Как это работает</a>
+          </div>
+          <p class="hero-note"><svg><use href="#i-check"/></svg> Участники тестирования получат Premium-доступ навсегда</p>
+          <p class="hero-disclaimer">Тренажёр может дополнять восстановительные занятия, но не заменяет медицинскую реабилитацию, лечение или рекомендации специалиста.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="section section--tint" id="how">
+      <div class="container">
+        <div class="section-head section-head--center reveal">
+          <div class="eyebrow">Простая механика</div>
+          <h2>Как работает Окостар</h2>
+          <p>Один рисунок, одна траектория за раз — без лишних действий и сложных настроек.</p>
+        </div>
+        <div class="steps">
+          <article class="step-card reveal">
+            <span class="step-number">1</span><h3>Выберите рисунок</h3><p>Получите интерактивное упражнение с последовательностью заданных траекторий.</p>
+            <div class="step-visual"><svg viewBox="0 0 300 130"><rect x="35" y="24" width="72" height="82" rx="12" fill="#dbeafe"/><rect x="114" y="24" width="72" height="82" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="2"/><rect x="193" y="24" width="72" height="82" rx="12" fill="#e0f2fe"/><path d="M130 78c10-28 29-32 40-5" class="mini-active"/></svg></div>
+          </article>
+          <article class="step-card reveal">
+            <span class="step-number">2</span><h3>Следуйте по линии</h3><p>Проведите пальцем или стилусом по анимированной подсказке. Чем точнее вы повторите траекторию, тем больше очков получите.</p>
+            <div class="step-visual"><svg viewBox="0 0 300 130"><path d="M28 88c35-78 77 33 116-30s81 49 128-22" class="mini-target"/><path d="M28 88c35-78 77 33 116-30s81 49 128-22" class="mini-guide"/></svg></div>
+          </article>
+          <article class="step-card reveal">
+            <span class="step-number">3</span><h3>Восстановите рисунок</h3><p>После каждого пройденного участка проявляется точная оригинальная линия.</p>
+            <div class="step-visual"><svg viewBox="0 0 300 130"><path d="M63 99c18-48 53-69 87-69s68 21 87 69M93 86c14 18 34 27 57 27s43-9 57-27" class="mini-active"/><circle cx="119" cy="67" r="5" fill="#3b82f6"/><circle cx="181" cy="67" r="5" fill="#3b82f6"/></svg></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="eyebrow">В процессе упражнения</div>
+          <h2>Что тренирует механика</h2>
+          <p>Каждое упражнение требует внимания к траектории и контролируемого движения руки.</p>
+        </div>
+        <div class="benefit-grid">
+          <article class="benefit-card reveal"><span class="icon-box"><svg><use href="#i-hand"/></svg></span><h3>Мелкая моторика</h3><p>Упражнения требуют контролируемых движений кисти и пальцев.</p></article>
+          <article class="benefit-card reveal"><span class="icon-box icon-box--cyan"><svg><use href="#i-target"/></svg></span><h3>Точность движений</h3><p>Необходимо придерживаться заданной векторной траектории.</p></article>
+          <article class="benefit-card reveal"><span class="icon-box icon-box--violet"><svg><use href="#i-eye"/></svg></span><h3>Зрительно-моторная координация</h3><p>Пользователь следит за линией и одновременно управляет рукой.</p></article>
+          <article class="benefit-card reveal"><span class="icon-box icon-box--green"><svg><use href="#i-control"/></svg></span><h3>Контроль движения</h3><p>Прохождение требует управления направлением и темпом движения.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--compact">
+      <div class="container">
+        <div class="device-panel reveal">
+          <div class="device-copy">
+            <div class="eyebrow">Устройства</div>
+            <h2>Планшет и стилус</h2>
+            <p class="lead">Окостар ориентирован на iPad и Android-планшеты. Выполнять упражнения можно пальцем, но стилус крайне желателен для более точного движения.</p>
+            <ul class="device-list">
+              <li><svg><use href="#i-tablet"/></svg> iPad и Apple Pencil или совместимый стилус</li>
+              <li><svg><use href="#i-tablet"/></svg> Android-планшет и совместимый стилус</li>
+              <li><svg><use href="#i-hand"/></svg> Возможность работать пальцем</li>
+            </ul>
+          </div>
+          <div class="device-art" aria-hidden="true">
+            <div class="device-tablet"><div><svg viewBox="0 0 320 220"><path d="M35 162c45-114 92 41 135-59s75 51 118-47" fill="none" stroke="#dbeafe" stroke-width="17" stroke-linecap="round"/><path d="M35 162c45-114 92 41 135-59s75 51 118-47" fill="none" stroke="#3b82f6" stroke-width="8" stroke-linecap="round" stroke-dasharray="15 12"/></svg></div></div>
+            <div class="device-pencil"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="testing">
+      <div class="container">
+        <div class="section-head section-head--center reveal">
+          <div class="eyebrow">Участие бесплатно</div>
+          <h2>Что происходит во время тестирования</h2>
+          <p>От короткой заявки до доступа к тренажёру — четыре понятных шага.</p>
+        </div>
+        <div class="timeline">
+          <article class="timeline-item reveal"><h3>Оставьте заявку</h3><p>Заполните форму и расскажите немного о будущем участнике.</p></article>
+          <article class="timeline-item reveal"><h3>Мы свяжемся с вами</h3><p>Команда ознакомится с заявкой и ответит по выбранному способу связи.</p></article>
+          <article class="timeline-item reveal"><h3>Получите доступ</h3><p>Приглашение придёт через Email, Telegram или WhatsApp.</p></article>
+          <article class="timeline-item reveal"><h3>Попробуйте Окостар</h3><p>Выполняйте упражнения и делитесь впечатлениями с командой.</p></article>
+        </div>
+        <div class="premium-banner reveal">
+          <div><span class="icon-box"><svg><use href="#i-heart"/></svg></span><span><h3>Спасибо за участие в развитии проекта</h3><p>Все участники тестирования получают Premium-доступ к Окостар навсегда бесплатно.</p></span></div>
+          <span class="premium-label">Premium навсегда</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--tint">
+      <div class="container data-grid">
+        <div class="section-head reveal">
+          <div class="eyebrow">Техническая статистика</div>
+          <h2>Какие данные собирает тренажёр</h2>
+          <p>Показатели помогают изучать удобство механики и развивать продукт. Они не являются медицинскими результатами.</p>
+          <div class="data-note"><svg><use href="#i-info"/></svg><span>Изменение показателей не означает выздоровление, ухудшение или медицинское улучшение.</span></div>
+        </div>
+        <div class="data-cards">
+          <article class="data-card reveal"><strong><svg><use href="#i-target"/></svg> Точность линии</strong><p>Насколько траектория попытки совпадает с заданной.</p></article>
+          <article class="data-card reveal"><strong><svg><use href="#i-clock"/></svg> Время выполнения</strong><p>Сколько времени заняло цифровое упражнение.</p></article>
+          <article class="data-card reveal"><strong><svg><use href="#i-repeat"/></svg> Ошибки и пропуски</strong><p>Количество повторных попыток и пропущенных линий.</p></article>
+          <article class="data-card reveal"><strong><svg><use href="#i-picture"/></svg> Завершённые рисунки</strong><p>Прогресс и частота использования тренажёра.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--compact">
+      <div class="container">
+        <div class="status-panel reveal">
+          <span class="icon-box"><svg><use href="#i-shield"/></svg></span>
+          <div><h3>Окостар находится на стадии разработки</h3><p>Мы проводим раннее тестирование, собираем обратную связь и статистику использования, чтобы изучить возможности применения механики и определить дальнейшие направления развития продукта.</p><p>Окостар в текущем виде не является зарегистрированным медицинским изделием или сертифицированной медицинской программой. Тренажёр не предназначен для диагностики и не заменяет консультацию врача, назначенное лечение или медицинскую реабилитацию.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--tint" id="application">
+      <div class="container form-shell">
+        <aside class="form-aside reveal">
+          <div class="eyebrow">Участвовать бесплатно</div>
+          <h2>Принять участие в тестировании</h2>
+          <p class="lead">Расскажите немного о себе или человеке, который будет пользоваться Окостар.</p>
+          <div class="form-points">
+            <div class="form-point"><span><svg><use href="#i-check"/></svg></span><div><strong>Короткая форма</strong><br>Заполнение займёт несколько минут.</div></div>
+            <div class="form-point"><span><svg><use href="#i-shield"/></svg></span><div><strong>Без медицинских обещаний</strong><br>Мы изучаем удобство и возможности механики.</div></div>
+            <div class="form-point"><span><svg><use href="#i-heart"/></svg></span><div><strong>Premium-доступ навсегда</strong><br>Для всех участников тестирования.</div></div>
+          </div>
+          <div class="already-sent" id="already-sent" hidden>Вы уже заполняли заявку в этом браузере. При необходимости её можно заполнить повторно.</div>
+        </aside>
+
+        <div class="application-card reveal">
+          <form id="application-form" novalidate>
+            <div class="static-notice">Демонстрационная статическая версия: форма работает локально, но не отправляет данные команде. Для автоматической доставки в Telegram потребуется безопасный внешний обработчик — токен бота нельзя размещать в HTML.</div>
+            <fieldset class="form-section">
+              <legend class="form-legend">О вас</legend>
+              <div class="form-grid">
+                <div class="field field--full"><label class="required" for="role">Кто вы?</label><select id="role" name="role" required><option value="">Выберите вариант</option><option value="participant">Участник тестирования</option><option value="representative">Родитель / законный представитель</option><option value="specialist">Врач / специалист</option><option value="organization">Представитель медицинской / реабилитационной организации</option></select></div>
+                <div class="field"><label class="required" for="name">Имя</label><input id="name" name="name" autocomplete="name" maxlength="120" placeholder="Как к вам обращаться" required></div>
+                <div class="field participant-field"><label class="required" for="age">Возраст участника</label><input id="age" name="age" type="number" inputmode="numeric" min="0" max="130" placeholder="Например, 58" required></div>
+                <div class="field"><label class="required" for="country">Страна</label><input id="country" name="country" list="country-list" autocomplete="country-name" maxlength="120" placeholder="Начните вводить название" required><datalist id="country-list"></datalist></div>
+                <div class="field"><label for="city">Город</label><input id="city" name="city" autocomplete="address-level2" maxlength="120" placeholder="Необязательно"></div>
+                <div class="field professional-field" hidden><label for="specialization">Специализация / должность</label><input id="specialization" name="specialization" maxlength="160" placeholder="Например, эрготерапевт"></div>
+                <div class="field professional-field" hidden><label for="organization">Название организации</label><input id="organization" name="organization" maxlength="200" placeholder="Необязательно"></div>
+                <div class="field field--full professional-field" hidden><label for="professional-comment">Как вы хотели бы использовать или протестировать Окостар?</label><textarea id="professional-comment" name="professionalComment" maxlength="2000" placeholder="Расскажите о вашей задаче"></textarea></div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section participant-section">
+              <legend class="form-legend">О тренировке</legend>
+              <div class="form-grid">
+                <div class="field field--full"><label class="required" for="condition">С чем связано нарушение мелкой моторики?</label><select id="condition" name="condition" required><option value="">Выберите вариант</option><option>Инсульт</option><option>Черепно-мозговая травма</option><option>Травма руки / кисти</option><option>Последствия операции</option><option>ДЦП</option><option>Болезнь Паркинсона</option><option>Рассеянный склероз</option><option>Другое неврологическое заболевание</option><option>Врождённое состояние</option><option>Нарушение моторики без установленного диагноза</option><option>Другое</option><option>Не хочу указывать</option></select></div>
+                <div class="field field--full" id="other-condition-field" hidden><label class="required" for="other-condition">Уточните, пожалуйста</label><input id="other-condition" name="otherCondition" maxlength="300" placeholder="Опишите своими словами"></div>
+                <div class="field field--full"><label for="details">Расскажите подробнее</label><textarea id="details" name="details" maxlength="2000" placeholder="Необязательно"></textarea></div>
+                <div class="field field--full"><label class="required" for="duration">Как давно возникло состояние или нарушение?</label><select id="duration" name="duration" required><option value="">Выберите вариант</option><option>Менее 1 месяца</option><option>1–6 месяцев</option><option>6–12 месяцев</option><option>1–3 года</option><option>Более 3 лет</option><option>С рождения</option><option>Затрудняюсь ответить</option></select></div>
+                <div class="field field--full"><span class="field-label required">Для какой руки актуальна тренировка?</span><div class="choice-grid"><label class="choice"><input type="radio" name="hand" value="Правая" required>Правая</label><label class="choice"><input type="radio" name="hand" value="Левая">Левая</label><label class="choice"><input type="radio" name="hand" value="Обе">Обе</label></div></div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend class="form-legend">Устройство</legend>
+              <div class="form-grid">
+                <div class="field field--full"><span class="field-label required">Какое устройство у вас есть?</span><div class="choice-grid" id="device-choices"><label class="choice"><input type="checkbox" name="device" value="iPad">iPad</label><label class="choice"><input type="checkbox" name="device" value="Android-планшет">Android-планшет</label><label class="choice"><input type="checkbox" name="device" value="Другое">Другое</label><label class="choice"><input type="checkbox" name="device" value="Пока нет подходящего устройства">Пока нет подходящего устройства</label></div><small>Можно выбрать несколько вариантов.</small></div>
+                <div class="field field--full"><span class="field-label required">Есть ли у вас стилус?</span><div class="choice-grid"><label class="choice"><input type="radio" name="stylus" value="Apple Pencil" required>Apple Pencil</label><label class="choice"><input type="radio" name="stylus" value="Другой стилус">Другой стилус</label><label class="choice"><input type="radio" name="stylus" value="Нет">Нет</label><label class="choice"><input type="radio" name="stylus" value="Не знаю">Не знаю</label></div><small>Стилус крайне желателен для более точного выполнения упражнений.</small></div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend class="form-legend">Как с вами связаться</legend>
+              <div class="form-grid">
+                <div class="field field--full"><label class="required" for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="name@example.com" required></div>
+                <div class="field field--full"><span class="field-label required">Предпочтительный способ связи</span><div class="choice-grid"><label class="choice"><input type="radio" name="contact" value="Telegram" required>Telegram</label><label class="choice"><input type="radio" name="contact" value="WhatsApp">WhatsApp</label><label class="choice"><input type="radio" name="contact" value="Email">Email</label></div></div>
+                <div class="field field--full" id="telegram-field" hidden><label class="required" for="telegram">Telegram</label><input id="telegram" name="telegram" maxlength="120" placeholder="@username или номер телефона"></div>
+                <div class="field field--full" id="whatsapp-field" hidden><label class="required" for="whatsapp">WhatsApp</label><input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" maxlength="50" placeholder="+7 999 000-00-00"></div>
+              </div>
+            </fieldset>
+
+            <label class="consent"><input type="checkbox" name="consent" required><span>Я согласен(на) на обработку указанных данных для рассмотрения заявки и связи по вопросам тестирования.</span></label>
+            <button class="button button--primary button--large button--full" type="submit">Отправить заявку <svg><use href="#i-arrow"/></svg></button>
+            <p class="form-status" id="application-status" role="alert"></p>
+          </form>
+          <div class="success-state" id="application-success" hidden>
+            <span class="success-icon"><svg><use href="#i-check"/></svg></span>
+            <h3>Форма заполнена</h3>
+            <p>Это статическая версия: ответы не сохранялись и не были отправлены команде. В браузере осталась только отметка о заполнении формы.</p>
+            <button class="button" type="button" id="application-again">Заполнить ещё раз</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cooperation">
+      <div class="container cooperation-inner reveal">
+        <div class="cooperation-copy"><div class="eyebrow">Для специалистов и партнёров</div><h2>Открыты к сотрудничеству</h2><p>Окостар находится на стадии развития. Мы открыты к предложениям от специалистов, медицинских организаций и потенциальных партнёров.</p></div>
+        <button class="button button--primary button--large" type="button" data-open-modal>Предложить сотрудничество <svg><use href="#i-arrow"/></svg></button>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="container">
+        <div class="section-head section-head--center reveal"><div class="eyebrow">Частые вопросы</div><h2>FAQ</h2><p>Коротко отвечаем на главное об участии и текущей версии продукта.</p></div>
+        <div class="faq">
+          <details class="reveal"><summary>Что такое Окостар?</summary><p>Разрабатываемый интерактивный программный тренажёр для упражнений, связанных с мелкой моторикой, точностью движений и зрительно-моторной координацией.</p></details>
+          <details class="reveal"><summary>Участие бесплатное?</summary><p>Да. Участие в текущем тестировании бесплатно.</p></details>
+          <details class="reveal"><summary>Что получат участники?</summary><p>Доступ к тестовой версии тренажёра и Premium-доступ к Окостар навсегда бесплатно.</p></details>
+          <details class="reveal"><summary>На каких устройствах работает Окостар?</summary><p>Текущая версия ориентирована на iPad и Android-планшеты. Работать можно пальцем или совместимым стилусом.</p></details>
+          <details class="reveal"><summary>Нужен ли стилус?</summary><p>Он не является строгим техническим требованием, но крайне желателен для более точного прохождения траекторий.</p></details>
+          <details class="reveal"><summary>Является ли Окостар медицинским изделием?</summary><p>Нет. Проект находится в разработке, не предназначен для диагностики и не заменяет консультацию врача, лечение или медицинскую реабилитацию.</p></details>
+          <details class="reveal"><summary>Кто может подать заявку?</summary><p>Будущий участник, родитель или законный представитель, врач, специалист либо представитель медицинской или реабилитационной организации.</p></details>
+          <details class="reveal"><summary>Когда со мной свяжутся?</summary><p>Команда рассмотрит заявку и свяжется по указанным контактам. Мы намеренно не обещаем конкретный срок ответа.</p></details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-main">
+        <div class="footer-brand"><a class="logo" href="#top"><span class="logo-mark"><svg><use href="#i-path"/></svg></span><span>Окостар</span></a><p>Разрабатываемый интерактивный тренажёр для упражнений на мелкую моторику и зрительно-моторную координацию.</p></div>
+        <nav class="footer-nav" aria-label="Навигация в подвале"><a href="#how">Как это работает</a><a href="#testing">О тестировании</a><a href="#application">Принять участие</a><a href="#faq">FAQ</a></nav>
+      </div>
+      <div class="footer-bottom"><span>© <span id="current-year"></span> Окостар</span><span>Проект находится на стадии разработки и тестирования</span></div>
+    </div>
+  </footer>
+
+  <div class="modal" id="cooperation-modal" role="dialog" aria-modal="true" aria-labelledby="cooperation-title" hidden>
+    <div class="modal-panel">
+      <button class="modal-close" type="button" aria-label="Закрыть" data-close-modal><svg><use href="#i-close"/></svg></button>
+      <div class="modal-head"><h2 id="cooperation-title">Предложить сотрудничество</h2><p>Расскажите, как вы хотели бы участвовать в развитии Окостар.</p></div>
+      <form id="cooperation-form" novalidate>
+        <div class="static-notice">В статической версии обращение можно заполнить и проверить, но оно не отправляется автоматически.</div>
+        <div class="form-grid">
+          <div class="field"><label class="required" for="coop-name">Имя</label><input id="coop-name" name="name" autocomplete="name" maxlength="120" required></div>
+          <div class="field"><label for="coop-organization">Компания / организация</label><input id="coop-organization" name="organization" maxlength="200"></div>
+          <div class="field"><label for="coop-position">Роль / должность</label><input id="coop-position" name="position" maxlength="160"></div>
+          <div class="field"><label class="required" for="coop-type">Тип предложения</label><select id="coop-type" name="type" required><option value="">Выберите вариант</option><option>Медицинское сотрудничество</option><option>Тестирование в организации</option><option>Технологическое партнёрство</option><option>Дистрибуция / продвижение</option><option>Инвестиционное предложение</option><option>Другое</option></select></div>
+          <div class="field"><label class="required" for="coop-email">Email</label><input id="coop-email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
+          <div class="field"><label for="coop-messenger">Telegram / WhatsApp</label><input id="coop-messenger" name="messenger" maxlength="160"></div>
+          <div class="field field--full"><label class="required" for="coop-message">Сообщение</label><textarea id="coop-message" name="message" maxlength="3000" required></textarea></div>
+        </div>
+        <label class="consent"><input type="checkbox" name="consent" required><span>Я согласен(на) на обработку данных для рассмотрения предложения и обратной связи.</span></label>
+        <button class="button button--primary button--large button--full" type="submit">Сохранить предложение</button>
+        <p class="form-status" id="cooperation-status" role="alert"></p>
+      </form>
+      <div class="success-state" id="cooperation-success" hidden><span class="success-icon"><svg><use href="#i-check"/></svg></span><h3>Форма заполнена</h3><p>Это статическая версия: данные не сохранялись и не были отправлены команде.</p><button class="button" type="button" data-close-modal>Закрыть</button></div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const $ = (selector, root = document) => root.querySelector(selector);
+      const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+      const menuButton = $('.menu-button');
+      const navigation = $('#site-nav');
+
+      menuButton.addEventListener('click', () => {
+        const open = menuButton.getAttribute('aria-expanded') !== 'true';
+        menuButton.setAttribute('aria-expanded', String(open));
+        menuButton.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
+        navigation.classList.toggle('is-open', open);
+      });
+      $$('#site-nav a').forEach((link) => link.addEventListener('click', () => {
+        menuButton.setAttribute('aria-expanded', 'false');
+        navigation.classList.remove('is-open');
+      }));
+
+      const countryCodes = 'RU BY KZ AM AZ KG MD TJ TM UZ UA GE AF AL DZ AD AO AG AR AU AT BS BH BD BB BE BZ BJ BT BO BA BW BR BN BG BF BI CV KH CM CA CF TD CL CN CO KM CG CD CR CI HR CU CY CZ DK DJ DM DO EC EG SV GQ ER EE SZ ET FJ FI FR GA GM DE GH GR GD GT GN GW GY HT HN HU IS IN ID IR IQ IE IL IT JM JP JO KE KI KP KR KW LA LV LB LS LR LY LI LT LU MG MW MY MV ML MT MH MR MU MX FM MC MN ME MA MZ MM NA NR NP NL NZ NI NE NG MK NO OM PK PW PA PG PY PE PH PL PT QA RO RW KN LC VC WS SM ST SA SN RS SC SL SG SK SI SB SO ZA SS ES LK SD SR SE CH SY TW TZ TH TL TG TO TT TN TR TV UG AE GB US UY VU VA VE VN YE ZM ZW'.split(' ');
+      const countryList = $('#country-list');
+      try {
+        const names = new Intl.DisplayNames(['ru'], { type: 'region' });
+        const countries = countryCodes.map((code) => names.of(code)).filter(Boolean).sort((a, b) => a.localeCompare(b, 'ru'));
+        countries.sort((a) => a === 'Россия' ? -1 : 0);
+        countryList.innerHTML = countries.map((name) => `<option value="${String(name).replaceAll('&', '&amp;').replaceAll('"', '&quot;')}"></option>`).join('');
+      } catch {
+        countryList.innerHTML = '<option value="Россия"></option><option value="Беларусь"></option><option value="Казахстан"></option><option value="Армения"></option>';
+      }
+
+      const applicationForm = $('#application-form');
+      const role = $('#role');
+      const condition = $('#condition');
+      const otherConditionField = $('#other-condition-field');
+      const otherCondition = $('#other-condition');
+      const telegramField = $('#telegram-field');
+      const whatsappField = $('#whatsapp-field');
+      const telegram = $('#telegram');
+      const whatsapp = $('#whatsapp');
+
+      function toggleFields(elements, visible) {
+        elements.forEach((element) => {
+          element.hidden = !visible;
+          $$('input, select, textarea', element).forEach((control) => { control.disabled = !visible; });
+        });
+      }
+
+      function syncRole() {
+        const participant = role.value === '' || role.value === 'participant' || role.value === 'representative';
+        toggleFields($$('.participant-field, .participant-section'), participant);
+        toggleFields($$('.professional-field'), !participant && role.value !== '');
+      }
+
+      function syncCondition() {
+        const visible = condition.value === 'Другое';
+        otherConditionField.hidden = !visible;
+        otherCondition.disabled = !visible;
+        otherCondition.required = visible;
+      }
+
+      function syncContact() {
+        const value = $('input[name="contact"]:checked', applicationForm)?.value;
+        const showTelegram = value === 'Telegram';
+        const showWhatsapp = value === 'WhatsApp';
+        telegramField.hidden = !showTelegram;
+        whatsappField.hidden = !showWhatsapp;
+        telegram.disabled = !showTelegram;
+        whatsapp.disabled = !showWhatsapp;
+        telegram.required = showTelegram;
+        whatsapp.required = showWhatsapp;
+      }
+
+      role.addEventListener('change', syncRole);
+      condition.addEventListener('change', syncCondition);
+      $$('input[name="contact"]', applicationForm).forEach((input) => input.addEventListener('change', syncContact));
+      syncRole();
+      syncCondition();
+      syncContact();
+
+      function validateDevices() {
+        const devices = $$('input[name="device"]:checked', applicationForm);
+        const first = $('input[name="device"]', applicationForm);
+        first.setCustomValidity(devices.length ? '' : 'Выберите хотя бы одно устройство');
+        return devices.length > 0;
+      }
+      $$('input[name="device"]', applicationForm).forEach((input) => input.addEventListener('change', validateDevices));
+
+      applicationForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        validateDevices();
+        if (!applicationForm.checkValidity()) {
+          applicationForm.reportValidity();
+          $('#application-status').textContent = 'Проверьте обязательные поля.';
+          $('#application-status').className = 'form-status form-status--error';
+          return;
+        }
+        localStorage.setItem('okostar.testingApplicationSubmittedAt', new Date().toISOString());
+        applicationForm.hidden = true;
+        $('#application-success').hidden = false;
+        $('#already-sent').hidden = false;
+        $('#application-success').focus?.();
+      });
+
+      $('#application-again').addEventListener('click', () => {
+        applicationForm.reset();
+        applicationForm.hidden = false;
+        $('#application-success').hidden = true;
+        $('#application-status').textContent = '';
+        syncRole(); syncCondition(); syncContact();
+        role.focus();
+      });
+
+      if (localStorage.getItem('okostar.testingApplicationSubmittedAt')) $('#already-sent').hidden = false;
+
+      const modal = $('#cooperation-modal');
+      const cooperationForm = $('#cooperation-form');
+      let modalTrigger = null;
+      function openModal(trigger) {
+        modalTrigger = trigger;
+        modal.hidden = false;
+        document.body.classList.add('modal-open');
+        requestAnimationFrame(() => $('#coop-name').focus());
+      }
+      function closeModal() {
+        modal.hidden = true;
+        document.body.classList.remove('modal-open');
+        modalTrigger?.focus();
+      }
+      $$('[data-open-modal]').forEach((button) => button.addEventListener('click', () => openModal(button)));
+      $$('[data-close-modal]').forEach((button) => button.addEventListener('click', closeModal));
+      modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
+      document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !modal.hidden) closeModal(); });
+
+      cooperationForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (!cooperationForm.checkValidity()) {
+          cooperationForm.reportValidity();
+          $('#cooperation-status').textContent = 'Проверьте обязательные поля.';
+          $('#cooperation-status').className = 'form-status form-status--error';
+          return;
+        }
+        cooperationForm.hidden = true;
+        $('#cooperation-success').hidden = false;
+      });
+
+      const observer = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: .12 }) : null;
+      $$('.reveal').forEach((element) => observer ? observer.observe(element) : element.classList.add('is-visible'));
+      $('#current-year').textContent = new Date().getFullYear();
+    })();
+  </script>
+</body>
+</html>
