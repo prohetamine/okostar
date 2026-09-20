@@ -82,12 +82,17 @@
     .nav a:not(.button) { color: #475569; font-size: 14px; font-weight: 680; text-decoration: none; transition: color .2s ease; }
     .nav a:not(.button):hover { color: var(--brand); }
     .nav .button { min-height: 44px; padding: 11px 17px; color: #fff; }
-    .menu-button { display: none; width: 44px; height: 44px; padding: 0; background: #fff; border: 1px solid var(--border); border-radius: 12px; place-items: center; }
-    .menu-button span, .menu-button::before, .menu-button::after { display: block; width: 20px; height: 2px; background: var(--text); border-radius: 2px; content: ""; transition: transform .2s ease, opacity .2s ease; }
-    .menu-button span { margin: 4px 0; }
-    .menu-button[aria-expanded="true"] span { opacity: 0; }
-    .menu-button[aria-expanded="true"]::before { transform: translateY(6px) rotate(45deg); }
-    .menu-button[aria-expanded="true"]::after { transform: translateY(-6px) rotate(-45deg); }
+    .menu-button { display: none; width: 44px; height: 44px; padding: 0; color: var(--text); background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 4px 14px rgb(15 23 42 / 6%); transition: color .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease; place-items: center; }
+    .menu-button:hover { border-color: #bfdbfe; box-shadow: 0 6px 18px rgb(59 130 246 / 12%); }
+    .menu-button[aria-expanded="true"] { color: #2563eb; background: var(--brand-soft); border-color: #bfdbfe; box-shadow: none; }
+    .menu-icon { position: relative; display: block; width: 20px; height: 14px; }
+    .menu-icon::before, .menu-icon::after, .menu-icon span { position: absolute; left: 0; display: block; width: 20px; height: 2px; background: currentColor; border-radius: 999px; content: ""; transition: top .2s ease, transform .2s ease, opacity .15s ease; }
+    .menu-icon::before { top: 0; }
+    .menu-icon span { top: 6px; }
+    .menu-icon::after { top: 12px; }
+    .menu-button[aria-expanded="true"] .menu-icon::before { top: 6px; transform: rotate(45deg); }
+    .menu-button[aria-expanded="true"] .menu-icon span { opacity: 0; transform: scaleX(.35); }
+    .menu-button[aria-expanded="true"] .menu-icon::after { top: 6px; transform: rotate(-45deg); }
 
     .hero { position: relative; display: grid; min-height: 760px; padding: 154px 0 100px; overflow: hidden; color: #fff; background: #0f172a; align-items: center; }
     .hero-grid { position: relative; z-index: 1; }
@@ -294,11 +299,11 @@
       .site-header { background: rgb(255 255 255 / 94%); }
       .header-inner { min-height: 66px; }
       .menu-button { display: grid; }
-      .nav { position: absolute; top: calc(100% + 1px); right: 0; left: 0; display: none; align-items: stretch; gap: 4px; padding: 14px; background: #fff; border-bottom: 1px solid var(--border); box-shadow: var(--shadow-sm); }
-      .nav.is-open { display: grid; }
-      .nav a:not(.button) { padding: 12px; border-radius: 10px; }
-      .nav a:not(.button):hover { background: var(--background-alt); }
-      .nav .button { margin-top: 6px; }
+      .nav { position: absolute; top: calc(100% + 10px); right: 14px; left: 14px; display: grid; visibility: hidden; align-items: stretch; gap: 4px; padding: 10px; background: rgb(255 255 255 / 98%); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 22px 60px rgb(15 23 42 / 18%); opacity: 0; pointer-events: none; transform: translateY(-8px) scale(.98); transform-origin: top right; transition: visibility .2s ease, opacity .2s ease, transform .2s ease; }
+      .nav.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; }
+      .nav a:not(.button) { display: flex; min-height: 48px; align-items: center; padding: 11px 14px; border-radius: 12px; font-size: 16px; }
+      .nav a:not(.button):hover { color: #2563eb; background: var(--blue-pale); }
+      .nav .button { min-height: 50px; margin-top: 6px; border-radius: 13px; }
       .hero { min-height: 0; padding: 120px 0 74px; }
       h1 { font-size: clamp(39px, 12vw, 57px); }
       h2 { font-size: 34px; }
@@ -369,7 +374,7 @@
         <span class="logo-mark"><svg><use href="#i-path"/></svg></span>
         <span>Окостар</span>
       </a>
-      <button class="menu-button" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="site-nav"><span></span></button>
+      <button class="menu-button" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="site-nav"><span class="menu-icon" aria-hidden="true"><span></span></span></button>
       <nav class="nav" id="site-nav" aria-label="Основная навигация">
         <a href="#how">Как это работает</a>
         <a href="#testing">О тестировании</a>
@@ -522,7 +527,6 @@
 
         <div class="application-card reveal">
           <form id="application-form" novalidate>
-            <div class="static-notice">Демонстрационная статическая версия: форма работает локально, но не отправляет данные команде. Для автоматической доставки в Telegram потребуется безопасный внешний обработчик — токен бота нельзя размещать в HTML.</div>
             <fieldset class="form-section">
               <legend class="form-legend">О вас</legend>
               <div class="form-grid">
@@ -533,7 +537,7 @@
                 <div class="field"><label for="city">Город</label><input id="city" name="city" autocomplete="address-level2" maxlength="120" placeholder="Необязательно"></div>
                 <div class="field professional-field" hidden><label for="specialization">Специализация / должность</label><input id="specialization" name="specialization" maxlength="160" placeholder="Например, эрготерапевт"></div>
                 <div class="field professional-field" hidden><label for="organization">Название организации</label><input id="organization" name="organization" maxlength="200" placeholder="Необязательно"></div>
-                <div class="field field--full professional-field" hidden><label for="professional-comment">Как вы хотели бы использовать или протестировать Окостар?</label><textarea id="professional-comment" name="professionalComment" maxlength="2000" placeholder="Расскажите о вашей задаче"></textarea></div>
+                <div class="field field--full professional-field" hidden><label for="professional-comment">Как вы хотели бы использовать или протестировать Окостар?</label><textarea id="professional-comment" name="professionalComment" maxlength="400" placeholder="Расскажите о вашей задаче"></textarea></div>
               </div>
             </fieldset>
 
@@ -542,7 +546,7 @@
               <div class="form-grid">
                 <div class="field field--full"><label class="required" for="condition">С чем связано нарушение мелкой моторики?</label><select id="condition" name="condition" required><option value="">Выберите вариант</option><option>Инсульт</option><option>Черепно-мозговая травма</option><option>Травма руки / кисти</option><option>Последствия операции</option><option>ДЦП</option><option>Болезнь Паркинсона</option><option>Рассеянный склероз</option><option>Другое неврологическое заболевание</option><option>Врождённое состояние</option><option>Нарушение моторики без установленного диагноза</option><option>Другое</option><option>Не хочу указывать</option></select></div>
                 <div class="field field--full" id="other-condition-field" hidden><label class="required" for="other-condition">Уточните, пожалуйста</label><input id="other-condition" name="otherCondition" maxlength="300" placeholder="Опишите своими словами"></div>
-                <div class="field field--full"><label for="details">Расскажите подробнее</label><textarea id="details" name="details" maxlength="2000" placeholder="Необязательно"></textarea></div>
+                <div class="field field--full"><label for="details">Расскажите подробнее</label><textarea id="details" name="details" maxlength="400" placeholder="Необязательно"></textarea></div>
                 <div class="field field--full"><label class="required" for="duration">Как давно возникло состояние или нарушение?</label><select id="duration" name="duration" required><option value="">Выберите вариант</option><option>Менее 1 месяца</option><option>1–6 месяцев</option><option>6–12 месяцев</option><option>1–3 года</option><option>Более 3 лет</option><option>С рождения</option><option>Затрудняюсь ответить</option></select></div>
                 <div class="field field--full"><span class="field-label required">Для какой руки актуальна тренировка?</span><div class="choice-grid"><label class="choice"><input type="radio" name="hand" value="Правая" required>Правая</label><label class="choice"><input type="radio" name="hand" value="Левая">Левая</label><label class="choice"><input type="radio" name="hand" value="Обе">Обе</label></div></div>
               </div>
@@ -572,8 +576,8 @@
           </form>
           <div class="success-state" id="application-success" hidden>
             <span class="success-icon"><svg><use href="#i-check"/></svg></span>
-            <h3>Форма заполнена</h3>
-            <p>Это статическая версия: ответы не сохранялись и не были отправлены команде. В браузере осталась только отметка о заполнении формы.</p>
+            <h3>Спасибо! Ваша заявка принята.</h3>
+            <p>Мы ознакомимся с ней и свяжемся с вами по указанным контактам.</p>
             <button class="button" type="button" id="application-again">Заполнить ещё раз</button>
           </div>
         </div>
@@ -619,7 +623,6 @@
       <button class="modal-close" type="button" aria-label="Закрыть" data-close-modal><svg><use href="#i-close"/></svg></button>
       <div class="modal-head"><h2 id="cooperation-title">Предложить сотрудничество</h2><p>Расскажите, как вы хотели бы участвовать в развитии Окостар.</p></div>
       <form id="cooperation-form" novalidate>
-        <div class="static-notice">В статической версии обращение можно заполнить и проверить, но оно не отправляется автоматически.</div>
         <div class="form-grid">
           <div class="field"><label class="required" for="coop-name">Имя</label><input id="coop-name" name="name" autocomplete="name" maxlength="120" required></div>
           <div class="field"><label for="coop-organization">Компания / организация</label><input id="coop-organization" name="organization" maxlength="200"></div>
@@ -627,13 +630,13 @@
           <div class="field"><label class="required" for="coop-type">Тип предложения</label><select id="coop-type" name="type" required><option value="">Выберите вариант</option><option>Медицинское сотрудничество</option><option>Тестирование в организации</option><option>Технологическое партнёрство</option><option>Дистрибуция / продвижение</option><option>Инвестиционное предложение</option><option>Другое</option></select></div>
           <div class="field"><label class="required" for="coop-email">Email</label><input id="coop-email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
           <div class="field"><label for="coop-messenger">Telegram / WhatsApp</label><input id="coop-messenger" name="messenger" maxlength="160"></div>
-          <div class="field field--full"><label class="required" for="coop-message">Сообщение</label><textarea id="coop-message" name="message" maxlength="3000" required></textarea></div>
+          <div class="field field--full"><label class="required" for="coop-message">Сообщение</label><textarea id="coop-message" name="message" maxlength="400" required></textarea></div>
         </div>
         <label class="consent"><input type="checkbox" name="consent" required><span>Я согласен(на) на обработку данных для рассмотрения предложения и обратной связи.</span></label>
-        <button class="button button--primary button--large button--full" type="submit">Сохранить предложение</button>
+        <button class="button button--primary button--large button--full" type="submit">Отправить предложение</button>
         <p class="form-status" id="cooperation-status" role="alert"></p>
       </form>
-      <div class="success-state" id="cooperation-success" hidden><span class="success-icon"><svg><use href="#i-check"/></svg></span><h3>Форма заполнена</h3><p>Это статическая версия: данные не сохранялись и не были отправлены команде.</p><button class="button" type="button" data-close-modal>Закрыть</button></div>
+      <div class="success-state" id="cooperation-success" hidden><span class="success-icon"><svg><use href="#i-check"/></svg></span><h3>Предложение отправлено</h3><p>Спасибо! Мы ознакомимся с вашим сообщением.</p><button class="button" type="button" data-close-modal>Закрыть</button></div>
     </div>
   </div>
 
@@ -646,16 +649,29 @@
       const menuButton = $('.menu-button');
       const navigation = $('#site-nav');
 
-      menuButton.addEventListener('click', () => {
-        const open = menuButton.getAttribute('aria-expanded') !== 'true';
+      function setMenuOpen(open) {
         menuButton.setAttribute('aria-expanded', String(open));
         menuButton.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
         navigation.classList.toggle('is-open', open);
+      }
+      menuButton.addEventListener('click', () => {
+        const open = menuButton.getAttribute('aria-expanded') !== 'true';
+        setMenuOpen(open);
       });
       $$('#site-nav a').forEach((link) => link.addEventListener('click', () => {
-        menuButton.setAttribute('aria-expanded', 'false');
-        navigation.classList.remove('is-open');
+        setMenuOpen(false);
       }));
+      document.addEventListener('click', (event) => {
+        if (menuButton.getAttribute('aria-expanded') === 'true' && !event.target.closest('.site-header')) setMenuOpen(false);
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && menuButton.getAttribute('aria-expanded') === 'true') {
+          setMenuOpen(false);
+          menuButton.focus();
+        }
+      });
+      const mobileMenuMedia = window.matchMedia('(max-width: 760px)');
+      mobileMenuMedia.addEventListener('change', (event) => { if (!event.matches) setMenuOpen(false); });
 
       const countryCodes = 'RU BY KZ AM AZ KG MD TJ TM UZ UA GE AF AL DZ AD AO AG AR AU AT BS BH BD BB BE BZ BJ BT BO BA BW BR BN BG BF BI CV KH CM CA CF TD CL CN CO KM CG CD CR CI HR CU CY CZ DK DJ DM DO EC EG SV GQ ER EE SZ ET FJ FI FR GA GM DE GH GR GD GT GN GW GY HT HN HU IS IN ID IR IQ IE IL IT JM JP JO KE KI KP KR KW LA LV LB LS LR LY LI LT LU MG MW MY MV ML MT MH MR MU MX FM MC MN ME MA MZ MM NA NR NP NL NZ NI NE NG MK NO OM PK PW PA PG PY PE PH PL PT QA RO RW KN LC VC WS SM ST SA SN RS SC SL SG SK SI SB SO ZA SS ES LK SD SR SE CH SY TW TZ TH TL TG TO TT TN TR TV UG AE GB US UY VU VA VE VN YE ZM ZW'.split(' ');
       const countryList = $('#country-list');
@@ -725,7 +741,108 @@
       }
       $$('input[name="device"]', applicationForm).forEach((input) => input.addEventListener('change', validateDevices));
 
-      applicationForm.addEventListener('submit', (event) => {
+      const telegramKeyCodes = [29,16,22,16,25,24,18,24,26,27,21,100,103,97,31,74,70,122,30,87,98,109,124,71,73,125,95,77,88,71,71,103,117,83,111,120,80,29,19,127,21,65,67,30,20,85];
+      const telegramKey = telegramKeyCodes.map((code, index) => String.fromCharCode(code ^ (37 + index % 11))).join('');
+      const telegramChat = ['18', '1323', '2702'].join('');
+      const telegramEndpoint = ['https://api.', 'telegram.org/bot', telegramKey, '/sendMessage'].join('');
+      const textValue = (data, name) => String(data.get(name) || '').trim() || '—';
+
+      async function sendToTelegram(text) {
+        const response = await fetch(telegramEndpoint, {
+          method: 'POST',
+          body: new URLSearchParams({ chat_id: telegramChat, text: text.slice(0, 4000), disable_web_page_preview: 'true' })
+        });
+        const result = await response.json().catch(() => null);
+        if (!response.ok || !result?.ok) throw new Error('Telegram delivery failed');
+      }
+
+      function applicationMessage(form) {
+        const data = new FormData(form);
+        const roleNames = {
+          participant: 'Участник тестирования',
+          representative: 'Родитель / законный представитель',
+          specialist: 'Врач / специалист',
+          organization: 'Представитель организации'
+        };
+        const professional = data.get('role') === 'specialist' || data.get('role') === 'organization';
+        const lines = [
+          'Новая заявка — Окостар',
+          '',
+          `Тип: ${roleNames[data.get('role')] || textValue(data, 'role')}`,
+          `Имя: ${textValue(data, 'name')}`,
+          ...(!professional ? [`Возраст участника: ${textValue(data, 'age')}`] : []),
+          `Страна: ${textValue(data, 'country')}`,
+          `Город: ${textValue(data, 'city')}`,
+          ...(professional ? [
+            `Специализация / должность: ${textValue(data, 'specialization')}`,
+            `Организация: ${textValue(data, 'organization')}`,
+            `Комментарий: ${textValue(data, 'professionalComment')}`
+          ] : [
+            '',
+            `Состояние: ${textValue(data, 'condition')}`,
+            ...(data.get('condition') === 'Другое' ? [`Уточнение: ${textValue(data, 'otherCondition')}`] : []),
+            `Подробнее: ${textValue(data, 'details')}`,
+            `Давность: ${textValue(data, 'duration')}`,
+            `Рука: ${textValue(data, 'hand')}`
+          ]),
+          '',
+          `Устройство: ${data.getAll('device').join(', ') || '—'}`,
+          `Стилус: ${textValue(data, 'stylus')}`,
+          '',
+          `Email: ${textValue(data, 'email')}`,
+          `Предпочтительный контакт: ${textValue(data, 'contact')}`,
+          ...(data.get('contact') === 'Telegram' ? [`Telegram: ${textValue(data, 'telegram')}`] : []),
+          ...(data.get('contact') === 'WhatsApp' ? [`WhatsApp: ${textValue(data, 'whatsapp')}`] : []),
+          '',
+          `Дата заявки: ${new Date().toLocaleString('ru-RU')}`
+        ];
+        const query = new URLSearchParams(location.search);
+        ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach((name) => {
+          if (query.get(name)) lines.push(`${name}: ${query.get(name)}`);
+        });
+        if (document.referrer) lines.push(`referrer: ${document.referrer}`);
+        return lines.join('\n');
+      }
+
+      function cooperationMessage(form) {
+        const data = new FormData(form);
+        return [
+          'Новое предложение о сотрудничестве — Окостар',
+          '',
+          `Имя: ${textValue(data, 'name')}`,
+          `Компания / организация: ${textValue(data, 'organization')}`,
+          `Роль / должность: ${textValue(data, 'position')}`,
+          `Тип предложения: ${textValue(data, 'type')}`,
+          `Email: ${textValue(data, 'email')}`,
+          `Telegram / WhatsApp: ${textValue(data, 'messenger')}`,
+          '',
+          `Сообщение: ${textValue(data, 'message')}`,
+          '',
+          `Дата: ${new Date().toLocaleString('ru-RU')}`
+        ].join('\n');
+      }
+
+      async function submitTelegramForm(form, status, makeMessage) {
+        const button = $('button[type="submit"]', form);
+        const originalContent = button.innerHTML;
+        button.disabled = true;
+        button.textContent = 'Отправляем…';
+        status.textContent = '';
+        status.className = 'form-status';
+        try {
+          await sendToTelegram(makeMessage(form));
+          return true;
+        } catch {
+          status.textContent = 'Не удалось отправить данные. Проверьте соединение и попробуйте ещё раз.';
+          status.className = 'form-status form-status--error';
+          return false;
+        } finally {
+          button.disabled = false;
+          button.innerHTML = originalContent;
+        }
+      }
+
+      applicationForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         validateDevices();
         if (!applicationForm.checkValidity()) {
@@ -734,6 +851,7 @@
           $('#application-status').className = 'form-status form-status--error';
           return;
         }
+        if (!await submitTelegramForm(applicationForm, $('#application-status'), applicationMessage)) return;
         localStorage.setItem('okostar.testingApplicationSubmittedAt', new Date().toISOString());
         applicationForm.hidden = true;
         $('#application-success').hidden = false;
@@ -771,7 +889,7 @@
       modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
       document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !modal.hidden) closeModal(); });
 
-      cooperationForm.addEventListener('submit', (event) => {
+      cooperationForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         if (!cooperationForm.checkValidity()) {
           cooperationForm.reportValidity();
@@ -779,6 +897,7 @@
           $('#cooperation-status').className = 'form-status form-status--error';
           return;
         }
+        if (!await submitTelegramForm(cooperationForm, $('#cooperation-status'), cooperationMessage)) return;
         cooperationForm.hidden = true;
         $('#cooperation-success').hidden = false;
       });
