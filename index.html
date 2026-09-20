@@ -635,14 +635,14 @@
             <fieldset class="form-section">
               <legend class="form-legend">О вас</legend>
               <div class="form-grid">
-                <div class="field field--full"><label class="required" for="role">Кто вы?</label><select id="role" name="role" required><option value="">Выберите вариант</option><option value="participant">Участник тестирования</option><option value="representative">Родитель / законный представитель</option><option value="specialist">Врач / специалист</option><option value="organization">Представитель медицинской / реабилитационной организации</option></select></div>
+                <div class="field field--full"><label class="required" for="role">Кто вы?</label><select id="role" name="role" required><option value="">Выберите вариант</option><option value="participant">Участник тестирования</option><option value="representative">Родитель / законный представитель</option><option value="specialist">Врач / специалист</option><option value="organization">Представитель медицинской / реабилитационной организации</option><option value="investor">Инвестор / потенциальный партнёр</option></select></div>
                 <div class="field"><label class="required" for="name">Имя</label><input id="name" name="name" autocomplete="name" maxlength="120" placeholder="Как к вам обращаться" required></div>
                 <div class="field participant-field"><label class="required" for="age">Возраст участника</label><input id="age" name="age" type="number" inputmode="numeric" min="0" max="130" placeholder="Например, 58" required></div>
                 <div class="field"><label class="required" for="country">Страна</label><input id="country" name="country" list="country-list" autocomplete="country-name" maxlength="120" placeholder="Начните вводить название" required><datalist id="country-list"></datalist></div>
                 <div class="field"><label for="city">Город</label><input id="city" name="city" autocomplete="address-level2" maxlength="120" placeholder="Необязательно"></div>
-                <div class="field professional-field" hidden><label for="specialization">Специализация / должность</label><input id="specialization" name="specialization" maxlength="160" placeholder="Например, эрготерапевт"></div>
+                <div class="field professional-field" hidden><label id="specialization-label" for="specialization">Специализация / должность</label><input id="specialization" name="specialization" maxlength="160" placeholder="Например, эрготерапевт"></div>
                 <div class="field professional-field" hidden><label for="organization">Название организации</label><input id="organization" name="organization" maxlength="200" placeholder="Необязательно"></div>
-                <div class="field field--full professional-field" hidden><label for="professional-comment">Как вы хотели бы использовать или протестировать Окостар?</label><textarea id="professional-comment" name="professionalComment" maxlength="400" placeholder="Расскажите о вашей задаче"></textarea></div>
+                <div class="field field--full professional-field" hidden><label id="professional-comment-label" for="professional-comment">Как вы хотели бы использовать или протестировать Окостар?</label><textarea id="professional-comment" name="professionalComment" maxlength="400" placeholder="Расскажите о вашей задаче"></textarea></div>
               </div>
             </fieldset>
 
@@ -657,7 +657,7 @@
               </div>
             </fieldset>
 
-            <fieldset class="form-section">
+            <fieldset class="form-section participant-section">
               <legend class="form-legend">Устройство</legend>
               <div class="form-grid">
                 <div class="field field--full"><span class="field-label required">Какое устройство у вас есть?</span><div class="choice-grid" id="device-choices"><label class="choice"><input type="checkbox" name="device" value="iPad">iPad</label><label class="choice"><input type="checkbox" name="device" value="Android-планшет">Android-планшет</label><label class="choice"><input type="checkbox" name="device" value="Другое">Другое</label><label class="choice"><input type="checkbox" name="device" value="Пока нет подходящего устройства">Пока нет подходящего устройства</label></div><small>Можно выбрать несколько вариантов.</small></div>
@@ -794,6 +794,10 @@
       const condition = $('#condition');
       const otherConditionField = $('#other-condition-field');
       const otherCondition = $('#other-condition');
+      const specialization = $('#specialization');
+      const specializationLabel = $('#specialization-label');
+      const professionalComment = $('#professional-comment');
+      const professionalCommentLabel = $('#professional-comment-label');
       const telegramField = $('#telegram-field');
       const whatsappField = $('#whatsapp-field');
       const telegram = $('#telegram');
@@ -808,8 +812,13 @@
 
       function syncRole() {
         const participant = role.value === '' || role.value === 'participant' || role.value === 'representative';
+        const investor = role.value === 'investor';
         toggleFields($$('.participant-field, .participant-section'), participant);
         toggleFields($$('.professional-field'), !participant && role.value !== '');
+        specializationLabel.textContent = investor ? 'Роль / должность' : 'Специализация / должность';
+        specialization.placeholder = investor ? 'Например, инвестиционный директор' : 'Например, эрготерапевт';
+        professionalCommentLabel.textContent = investor ? 'Расскажите о вашем интересе к проекту Окостар' : 'Как вы хотели бы использовать или протестировать Окостар?';
+        professionalComment.placeholder = investor ? 'Например, направление и формат возможного сотрудничества' : 'Расскажите о вашей задаче';
       }
 
       function syncCondition() {
@@ -867,9 +876,10 @@
           participant: 'Участник тестирования',
           representative: 'Родитель / законный представитель',
           specialist: 'Врач / специалист',
-          organization: 'Представитель организации'
+          organization: 'Представитель организации',
+          investor: 'Инвестор / потенциальный партнёр'
         };
-        const professional = data.get('role') === 'specialist' || data.get('role') === 'organization';
+        const professional = data.get('role') === 'specialist' || data.get('role') === 'organization' || data.get('role') === 'investor';
         const lines = [
           'Новая заявка — Окостар',
           '',
@@ -890,9 +900,7 @@
             `Давность: ${textValue(data, 'duration')}`,
             `Рука: ${textValue(data, 'hand')}`
           ]),
-          '',
-          `Устройство: ${data.getAll('device').join(', ') || '—'}`,
-          `Стилус: ${textValue(data, 'stylus')}`,
+          ...(!professional ? ['', `Устройство: ${data.getAll('device').join(', ') || '—'}`, `Стилус: ${textValue(data, 'stylus')}`] : []),
           '',
           `Email: ${textValue(data, 'email')}`,
           `Предпочтительный контакт: ${textValue(data, 'contact')}`,
