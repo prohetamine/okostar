@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#f8fbff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Окостар — демонстрация тренировки</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --brand: #3b82f6;
+      --brand-light: #60a5fa;
+      --brand-soft: #dbeafe;
+      --cyan: #0ea5e9;
+      --page: #f8fbff;
+      --card: #fff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --violet: #a78bfa;
+      --shadow: 0 18px 55px rgb(15 23 42 / 12%);
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { color: var(--text); background: var(--page); font-family: var(--font); -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; user-select: none; }
+    button { min-height: 48px; padding: 0 18px; color: var(--text); background: #fff; border: 1px solid var(--border); border-radius: 14px; font: inherit; font-weight: 750; cursor: pointer; touch-action: manipulation; transition: transform .16s ease, background .16s ease, border-color .16s ease, box-shadow .16s ease; }
+    button:active { transform: scale(.97); }
+    button:disabled { opacity: .5; cursor: default; transform: none; }
+    button:focus-visible { outline: 3px solid rgb(59 130 246 / 24%); outline-offset: 3px; }
+    svg { display: block; }
+    [hidden] { display: none !important; }
+
+    .app { position: relative; width: 100%; height: 100dvh; overflow: hidden; background: var(--page); }
+    .toolbar { position: absolute; z-index: 10; top: max(12px, env(safe-area-inset-top)); left: 50%; display: flex; width: max-content; max-width: calc(100vw - 24px); min-height: 64px; align-items: center; gap: 8px; padding: 8px; overflow-x: auto; color: var(--text); background: rgb(255 255 255 / 84%); border: 1px solid rgb(226 232 240 / 92%); border-radius: 18px; box-shadow: 0 8px 28px rgb(15 23 42 / 14%); transform: translateX(-50%); backdrop-filter: blur(18px); scrollbar-width: none; }
+    .toolbar::-webkit-scrollbar { display: none; }
+    .brand { display: flex; align-items: center; gap: 9px; padding: 0 7px 0 2px; font-size: 16px; font-weight: 850; letter-spacing: -.03em; white-space: nowrap; }
+    .brand-mark { display: grid; width: 40px; height: 40px; color: #fff; background: linear-gradient(135deg, var(--brand), var(--brand-light)); border-radius: 13px; box-shadow: 0 9px 22px rgb(59 130 246 / 24%); place-items: center; }
+    .brand-mark svg { width: 25px; height: 25px; }
+    .progress { display: flex; min-width: 360px; align-items: center; gap: 10px; padding: 6px 8px 6px 7px; background: #f8fbff; border: 1px solid var(--border); border-radius: 13px; }
+    .progress-ring { position: relative; display: grid; width: 42px; height: 42px; flex: none; place-items: center; }
+    .progress-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+    .progress-ring circle { fill: none; stroke-width: 4; }
+    .progress-ring circle:first-child { stroke: #e2e8f0; }
+    .progress-ring circle:last-child { stroke: var(--brand); stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset .35s ease; }
+    .progress-ring strong { position: relative; font-size: 12px; }
+    .progress-copy { min-width: 0; }
+    .progress-copy strong, .progress-copy small { display: block; }
+    .progress-copy strong { font-size: 14px; }
+    .progress-copy small { margin-top: 2px; color: var(--muted); font-size: 11px; }
+    .progress-track { width: 106px; height: 5px; margin-top: 6px; overflow: hidden; background: #e2e8f0; border-radius: 99px; }
+    .progress-track span { display: block; width: 0; height: 100%; background: linear-gradient(90deg, var(--brand), var(--cyan)); border-radius: inherit; transition: width .35s ease; }
+    .progress-score { display: grid; grid-template-columns: 20px auto; min-width: 112px; align-items: center; gap: 0 7px; margin-left: 2px; padding: 4px 8px; color: var(--brand); border-left: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+    .progress-score svg { grid-row: 1 / 3; width: 18px; height: 18px; fill: currentColor; }
+    .progress-score strong { font-size: 14px; white-space: nowrap; }
+    .progress-score small { color: var(--muted); font-size: 10px; white-space: nowrap; }
+    .toolbar-actions { display: flex; align-items: center; gap: 7px; }
+    .toolbar-button { display: inline-flex; min-width: 48px; min-height: 48px; align-items: center; justify-content: center; gap: 8px; padding: 0 13px; border: 0; border-radius: 12px; }
+    .toolbar-button svg { width: 20px; height: 20px; }
+    .toolbar-button--icon { width: 48px; padding: 0; }
+    .toolbar-button--skip { color: #1d4ed8; background: #eff6ff; border-color: #bfdbfe; }
+    .toolbar-button--skip:active { background: #dbeafe; }
+    .zoom-control { display: flex; align-items: center; gap: 4px; padding-left: 8px; border-left: 1px solid var(--border); }
+    .zoom-button { display: grid; width: 46px; min-width: 46px; min-height: 46px; padding: 0; border: 0; border-radius: 12px; place-items: center; }
+    .zoom-button svg { width: 20px; height: 20px; }
+    .zoom-value { display: inline-flex; width: 48px; min-width: 48px; justify-content: center; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+    .workspace { position: absolute; inset: 0; overflow: hidden; touch-action: none; }
+    #trainer-canvas { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
+    .instruction { position: absolute; z-index: 3; bottom: max(24px, env(safe-area-inset-bottom)); left: 50%; display: flex; min-width: 310px; align-items: center; justify-content: center; gap: 12px; padding: 13px 18px; color: #334155; background: rgb(255 255 255 / 90%); border: 1px solid rgb(226 232 240 / 90%); border-radius: 16px; box-shadow: 0 12px 36px rgb(15 23 42 / 10%); font-size: 14px; font-weight: 720; transform: translateX(-50%); backdrop-filter: blur(14px); pointer-events: none; transition: color .2s ease, border-color .2s ease, transform .2s ease; }
+    .instruction-icon { display: grid; width: 32px; height: 32px; flex: none; color: #fff; background: var(--brand); border-radius: 10px; place-items: center; transition: background .2s ease; }
+    .instruction-icon svg { width: 18px; height: 18px; }
+    .instruction.is-success { color: #166534; border-color: #bbf7d0; transform: translateX(-50%) translateY(-3px); }
+    .instruction.is-success .instruction-icon { background: var(--success); }
+    .instruction.is-error { color: #991b1b; border-color: #fecaca; }
+    .instruction.is-error .instruction-icon { background: var(--danger); }
+    .xp-fly { position: fixed; z-index: 25; color: var(--brand); font-size: 22px; font-weight: 900; text-shadow: 0 2px 5px rgb(255 255 255 / 90%), 0 2px 8px rgb(59 130 246 / 30%); pointer-events: none; animation: xp-fly .8s ease-out forwards; }
+    @keyframes xp-fly { from { opacity: 1; transform: translate(-50%, -50%) scale(.88); } to { opacity: 0; transform: translate(-50%, calc(-50% - 42px)) scale(1.08); } }
+
+    .screen { position: fixed; z-index: 50; inset: 0; display: grid; padding: max(28px, env(safe-area-inset-top)) max(28px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(28px, env(safe-area-inset-left)); background: rgb(248 251 255 / 94%); place-items: center; backdrop-filter: blur(16px); }
+    .screen-card { width: min(100%, 760px); padding: 42px; background: #fff; border: 1px solid var(--border); border-radius: 30px; box-shadow: var(--shadow); text-align: center; }
+    .screen-logo { display: inline-flex; align-items: center; gap: 11px; margin-bottom: 26px; font-size: 18px; font-weight: 850; }
+    .screen-logo .brand-mark { width: 36px; height: 36px; border-radius: 11px; }
+    .screen h1 { max-width: 620px; margin: 0 auto 15px; font-size: clamp(34px, 5vw, 50px); line-height: 1.05; letter-spacing: -.045em; }
+    .screen-lead { max-width: 570px; margin: 0 auto 28px; color: var(--muted); font-size: 18px; line-height: 1.55; }
+    .intro-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 0 28px; text-align: left; }
+    .intro-step { min-height: 112px; padding: 18px; background: #f8fbff; border: 1px solid #eaf1fb; border-radius: 17px; }
+    .intro-step strong { display: block; margin-bottom: 6px; font-size: 14px; }
+    .intro-step span { color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .intro-number { display: grid; width: 27px; height: 27px; margin-bottom: 12px; color: #fff !important; background: var(--brand); border-radius: 8px; font-weight: 800; place-items: center; }
+    .primary-button { display: inline-flex; min-width: 230px; min-height: 56px; align-items: center; justify-content: center; gap: 10px; color: #fff; background: linear-gradient(135deg, var(--brand), var(--brand-light)); border: 0; border-radius: 16px; box-shadow: 0 13px 30px rgb(59 130 246 / 28%); }
+    .primary-button svg { width: 20px; height: 20px; }
+    .intro-note { margin: 18px 0 0; color: #94a3b8; font-size: 12px; }
+
+    .completion-card { width: min(100%, 850px); padding: 0; overflow: hidden; }
+    .completion-preview { position: relative; height: 320px; overflow: hidden; background: linear-gradient(180deg, #eff6ff, #f8fbff); border-bottom: 1px solid var(--border); }
+    #result-canvas { width: 100%; height: 100%; }
+    .completion-copy { padding: 32px 38px 38px; }
+    .completion-check { display: grid; width: 58px; height: 58px; margin: -62px auto 20px; color: #fff; background: var(--success); border: 6px solid #fff; border-radius: 20px; box-shadow: 0 10px 24px rgb(34 197 94 / 24%); place-items: center; }
+    .completion-check svg { width: 28px; height: 28px; }
+    .completion-copy h2 { margin: 0 0 8px; font-size: 34px; letter-spacing: -.035em; }
+    .completion-copy > p { margin: 0 0 24px; color: var(--muted); }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 0 0 26px; }
+    .stat { padding: 15px; background: #f8fbff; border: 1px solid var(--border); border-radius: 15px; }
+    .stat strong, .stat span { display: block; }
+    .stat strong { font-size: 22px; }
+    .stat span { margin-top: 2px; color: var(--muted); font-size: 12px; }
+    #stat-score { color: var(--brand); }
+
+    .rotate-notice { display: none; position: fixed; z-index: 100; inset: 0; padding: 30px; background: #f8fbff; place-items: center; text-align: center; }
+    .rotate-notice svg { width: 62px; height: 62px; margin: 0 auto 20px; color: var(--brand); }
+    .rotate-notice strong { display: block; margin-bottom: 8px; font-size: 24px; }
+    .rotate-notice span { color: var(--muted); }
+
+    @media (max-width: 1100px) {
+      .brand > span:last-child { display: none; }
+      .brand { padding-right: 2px; }
+    }
+
+    @media (max-width: 760px) {
+      .toolbar { top: max(8px, env(safe-area-inset-top)); gap: 4px; max-width: calc(100vw - 16px); padding: 6px; }
+      .brand > span:last-child, .toolbar-button span, .progress-copy small { display: none; }
+      .brand { padding-right: 2px; }
+      .progress { min-width: 270px; padding: 5px; }
+      .progress-track { width: 92px; }
+      .progress-score { min-width: 102px; padding-right: 4px; }
+      .progress-score small { display: none; }
+      .toolbar-button { width: 46px; padding: 0; justify-content: center; }
+      .instruction { min-width: 0; width: max-content; max-width: calc(100% - 24px); bottom: max(14px, env(safe-area-inset-bottom)); }
+      .screen-card { padding: 28px 20px; border-radius: 24px; }
+      .intro-steps { grid-template-columns: 1fr; }
+      .intro-step { min-height: 0; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (orientation: portrait) and (min-width: 700px) {
+      .rotate-notice { display: grid; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+    <symbol id="i-path" viewBox="0 0 24 24"><path d="M4 18c3-9 5 1 8-8s5 1 8-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="4" cy="18" r="2" fill="currentColor"/><circle cx="20" cy="6" r="2" fill="currentColor"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="m4 20 4.5-1 11-11a2.1 2.1 0 0 0-3-3l-11 11L4 20Zm10-13 3 3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-restart" viewBox="0 0 24 24"><path d="M20 7h-9a6 6 0 1 0 5.5 8.4M17 4l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="m9 8-4 4 4 4M5 12h8a6 6 0 0 1 6 6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-skip" viewBox="0 0 24 24"><path d="m5 7 7 5-7 5V7Zm8 0 7 5-7 5V7Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-score" viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.7 6.3.9-4.6 4.4 1.1 6.3-5.6-3-5.6 3 1.1-6.3-4.6-4.4 6.3-.9Z" fill="currentColor"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-rotate" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 9a8 8 0 0 1 4-6M4 9 2 6m2 3 3-1m13 7a8 8 0 0 1-4 6m4-6 2 3m-2-3-3 1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </svg>
+
+  <main class="app">
+    <header class="toolbar">
+      <div class="brand"><span class="brand-mark"><svg><use href="#i-path"/></svg></span><span>Окостар</span></div>
+      <div class="progress" aria-live="polite">
+        <div class="progress-ring"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9"/><circle id="ring-progress" cx="18" cy="18" r="15.9"/></svg><strong id="progress-percent">0%</strong></div>
+        <div class="progress-copy"><strong><span id="stroke-current">0</span> / <span id="stroke-total">153</span> мазков</strong><small>Выполнено мазков</small><div class="progress-track"><span id="track-progress"></span></div></div>
+        <div class="progress-score" title="Очки точности"><svg><use href="#i-score"/></svg><strong><span id="score-value">0</span> / <span id="score-max">966</span> XP</strong><small>Очки точности</small></div>
+      </div>
+      <div class="toolbar-actions">
+        <button class="toolbar-button toolbar-button--icon" id="restart-button" type="button" aria-label="Начать заново" title="Начать заново"><svg><use href="#i-restart"/></svg></button>
+        <button class="toolbar-button" id="undo-button" type="button" aria-label="Отменить последний мазок" disabled><svg><use href="#i-undo"/></svg><span>Отменить</span></button>
+        <button class="toolbar-button toolbar-button--skip" id="skip-button" type="button" aria-label="Пропустить линию"><svg><use href="#i-skip"/></svg><span>Пропустить</span></button>
+      </div>
+      <div class="zoom-control" aria-label="Масштаб холста">
+        <button class="zoom-button" id="zoom-out" type="button" aria-label="Уменьшить масштаб"><svg><use href="#i-minus"/></svg></button>
+        <span class="zoom-value" id="zoom-value" aria-live="polite">100%</span>
+        <button class="zoom-button" id="zoom-in" type="button" aria-label="Увеличить масштаб"><svg><use href="#i-plus"/></svg></button>
+      </div>
+    </header>
+
+    <section class="workspace" id="workspace" aria-label="Холст упражнения">
+      <canvas id="trainer-canvas"></canvas>
+      <div class="instruction" id="instruction"><span class="instruction-icon"><svg><use href="#i-pen"/></svg></span><span id="instruction-text">Проведите по подсвеченной линии</span></div>
+    </section>
+  </main>
+
+  <section class="screen" id="intro-screen">
+    <div class="screen-card">
+      <div class="screen-logo"><span class="brand-mark"><svg><use href="#i-path"/></svg></span>Окостар</div>
+      <h1>Восстановите рисунок линию за линией</h1>
+      <p class="screen-lead">Проведите Apple Pencil или пальцем по подсвеченной траектории. После каждого точного движения рисунок будет постепенно проявляться.</p>
+      <div class="intro-steps">
+        <div class="intro-step"><span class="intro-number">1</span><strong>Начните с любой стороны</strong><span>Начать можно с любого конца линии — выберите удобное направление.</span></div>
+        <div class="intro-step"><span class="intro-number">2</span><strong>Рисуйте в своём темпе</strong><span>Направление не важно — главное, придерживаться траектории.</span></div>
+        <div class="intro-step"><span class="intro-number">3</span><strong>Получайте очки</strong><span>Чем точнее движение, тем больше XP начисляется за мазок.</span></div>
+      </div>
+      <button class="primary-button" id="start-button" type="button">Начать упражнение <svg><use href="#i-arrow"/></svg></button>
+      <p class="intro-note">Для наиболее точного выполнения используйте стилус.</p>
+    </div>
+  </section>
+
+  <section class="screen" id="completion-screen" hidden>
+    <div class="screen-card completion-card">
+      <div class="completion-preview"><canvas id="result-canvas"></canvas></div>
+      <div class="completion-copy">
+        <span class="completion-check"><svg><use href="#i-check"/></svg></span>
+        <h2>Упражнение завершено</h2>
+        <p>Вы восстановили рисунок №1988 из коллекции Окостар.</p>
+        <div class="stats"><div class="stat"><strong id="stat-lines">153</strong><span>выполнено самостоятельно</span></div><div class="stat"><strong id="stat-score">0 XP</strong><span>очки точности</span></div><div class="stat"><strong id="stat-retries">0</strong><span>повторных попыток</span></div><div class="stat"><strong id="stat-time">0:00</strong><span>время упражнения</span></div></div>
+        <button class="primary-button" id="again-button" type="button"><svg><use href="#i-restart"/></svg> Пройти ещё раз</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="rotate-notice"><div><svg><use href="#i-rotate"/></svg><strong>Поверните iPad</strong><span>Упражнение удобнее выполнять в альбомной ориентации.</span></div></div>
+
+  <script type="application/json" id="drawing-source">{"format":"legacy-draw-json","version":1,"source":"1988.bin","canvas":{"width":684,"height":410},"background":"#FFFFFF","legacyOptions":"1","instructions":[{"type":"style","width":2,"stroke":"#000000","fill":null},{"type":"polyline","points":[[256,112],[254,112],[253,114],[250,118],[249,122],[247,126],[245,129],[244,131],[243,132],[244,132],[247,131],[250,130],[250,129],[249,131],[247,135],[244,139],[243,143],[245,143],[250,144],[251,144],[250,146],[248,148],[247,151],[245,153],[244,154],[244,155],[244,157],[243,160],[244,162],[245,165],[250,170],[252,172],[254,176],[256,178],[259,182],[261,185],[264,188],[267,191],[269,193],[272,195],[274,198],[276,199],[280,201],[284,202],[287,204],[293,205],[297,207],[301,208],[304,208],[308,208],[311,208],[314,208],[320,209],[327,210],[331,210],[336,210],[341,210],[348,209],[350,207],[355,204],[358,203],[361,201],[365,198],[371,196],[374,193],[377,190],[380,186],[381,182],[383,178],[384,176],[387,171],[388,169],[389,167],[390,165],[391,163],[391,162],[393,161],[394,160],[396,158],[397,158],[398,158],[399,158],[400,158],[401,158],[403,158],[406,158],[407,157],[409,154],[412,150],[413,146],[414,144],[416,137],[418,133],[421,129],[421,125],[422,121],[422,117],[421,112],[418,109],[416,106],[414,104],[414,103],[415,103],[413,103],[412,103],[409,102],[408,102],[406,100],[403,99],[402,99],[401,99],[400,99],[398,99],[398,100],[395,100],[395,101],[394,101],[393,101],[391,101],[386,100],[386,99],[385,99],[384,98],[383,97],[383,96],[382,95],[381,93],[381,92],[376,93],[374,96],[369,98],[364,100],[361,101],[360,100],[357,94],[354,90],[354,89],[353,89],[349,92],[344,94],[342,95],[341,96],[339,96],[337,93],[335,86],[333,82],[330,81],[328,82],[318,88],[313,93],[311,96],[310,92],[308,88],[305,86],[304,86],[300,89],[292,93],[292,95],[291,95],[290,92],[290,87],[289,85],[284,87],[278,93],[275,96],[274,95],[272,90],[269,88],[266,89],[259,94],[256,97],[255,98],[255,97],[256,95],[255,94],[254,91],[254,87],[254,81],[254,78],[255,73],[255,70],[255,68],[254,70],[250,74],[247,78],[245,81],[245,86],[244,90],[244,93],[244,97],[244,101],[243,104],[243,105],[244,107],[244,109],[243,114],[243,117],[244,121],[245,124],[245,125],[244,128],[243,129],[243,130],[242,130],[242,131],[240,131]]},{"type":"polyline","points":[[399,116],[400,116],[402,115],[404,113],[405,113],[406,113],[407,115],[408,116],[408,117],[408,120],[408,123],[407,124],[407,125],[406,126],[405,127],[403,128],[402,129],[401,132],[400,134],[400,135],[400,137],[400,140],[400,141],[400,142],[399,143],[397,143],[396,143],[395,143]]},{"type":"style","width":2,"stroke":"#000000","fill":"#FFC480"},{"type":"polyline","points":[[229,124],[220,123],[210,120],[208,117],[205,106],[204,99],[204,96],[205,96],[205,94],[207,93],[208,93],[207,91],[211,91],[213,91],[215,89],[216,89],[217,88],[219,88],[218,87],[219,87],[220,87],[220,85],[220,84],[220,83],[219,81],[219,79],[218,75],[217,72],[216,68],[213,64],[213,59],[213,55],[215,52],[217,46],[221,43],[226,42],[229,41],[232,39],[237,39],[238,39],[239,37],[241,35],[242,32],[246,27],[249,24],[251,21],[255,21],[262,24],[267,24],[268,26],[269,27],[270,27],[274,26],[277,24],[284,20],[289,19],[290,19],[295,19],[297,19],[299,21],[302,23],[303,23],[305,19],[307,16],[312,13],[314,11],[317,10],[321,10],[327,10],[331,9],[334,9],[336,9],[339,10],[343,12],[345,17],[345,19],[346,21],[346,22],[349,20],[354,17],[361,17],[370,17],[378,18],[388,24],[395,29],[397,32],[398,36],[398,39],[398,40],[398,41],[397,41],[398,40],[401,38],[407,38],[413,40],[426,47],[435,55],[439,61],[440,66],[440,70],[439,75],[436,76],[435,76],[439,77],[442,78],[446,82],[449,89],[450,95],[450,99],[446,99],[445,99],[443,99],[446,101],[449,106],[453,111],[454,118],[454,125],[450,128],[445,129],[441,129],[440,129],[441,129],[443,129],[444,129],[448,133],[449,137],[450,143],[449,145],[445,145],[441,145],[437,145],[432,144],[432,143],[429,142],[427,141],[424,138],[421,136],[420,135],[420,134],[420,133],[420,130],[420,129],[420,127],[421,125],[421,119],[420,117],[417,114],[415,111],[410,108],[406,105],[402,103],[401,102],[401,101],[401,100],[398,98],[394,98],[392,98],[389,98],[385,100],[384,101],[381,101],[378,101],[374,97],[372,94],[370,90],[369,90],[368,93],[364,96],[361,97],[357,98],[354,100],[350,98],[345,96],[341,94],[340,91],[339,89],[339,88],[338,89],[332,90],[327,90],[325,88],[324,84],[321,81],[320,81],[317,83],[314,84],[312,85],[312,88],[310,90],[310,91],[308,92],[304,95],[300,96],[297,96],[295,96],[296,96],[292,92],[294,91],[293,88],[292,86],[292,83],[291,83],[288,82],[286,82],[283,82],[280,83],[280,84],[279,87],[278,89],[277,91],[275,95],[273,96],[270,97],[269,97],[266,96],[262,92],[261,89],[260,85],[260,82],[261,77],[262,75],[263,75],[263,74],[263,75],[262,77],[260,80],[259,82],[256,83],[254,83],[251,83],[249,82],[249,80],[249,76],[249,74],[249,73],[251,72],[251,73],[249,75],[248,77],[248,81],[248,83],[248,85],[248,90],[248,93],[249,97],[246,98],[243,99],[235,100],[233,101],[236,101],[244,100],[246,98],[244,94],[244,95],[244,99],[240,100],[229,100],[224,102],[224,104],[224,105],[223,107],[223,108],[224,110],[225,111],[225,112],[225,113],[225,114],[225,116],[225,117],[226,117],[230,117],[233,117],[235,117],[235,116],[237,116],[237,117],[237,118],[237,119],[237,120],[238,120],[239,120],[239,121],[239,124],[237,126],[234,127],[231,127],[230,127],[227,126],[225,123],[224,120]]},{"type":"style","width":2,"stroke":"#000000","fill":"#80C4FF"},{"type":"polyline","points":[[258,191],[259,192],[260,193],[261,194],[261,195],[263,197],[265,200],[268,203],[270,204],[273,206],[274,208],[278,211],[279,212],[276,211],[279,211],[286,215],[289,215],[290,215],[292,216],[297,217],[302,220],[306,221],[312,222],[316,223],[320,223],[325,223],[327,223],[331,223],[333,223],[334,222],[336,222],[336,221],[338,221],[338,220],[340,220],[341,219],[343,217],[344,217],[344,216],[345,216],[346,216],[348,216],[349,216],[350,216],[351,216],[353,216],[354,216],[357,216],[361,218],[370,220],[373,220],[376,220],[382,221],[388,222],[394,222],[401,222],[410,220],[414,219],[420,218],[424,215],[428,214],[429,214],[432,213],[430,215],[429,219],[428,221],[424,227],[423,231],[421,235],[420,240],[418,245],[418,250],[418,255],[418,260],[417,266],[417,269],[419,271],[419,275],[420,277],[421,279],[421,282],[422,283],[423,284],[424,285],[427,285],[428,284],[430,282],[431,277],[433,274],[435,268],[435,263],[436,258],[436,255],[438,248],[439,243],[440,240],[440,237],[440,233],[440,231],[440,230],[439,232],[438,235],[435,240],[435,247],[435,255],[435,261],[435,268],[435,273],[433,278],[432,283],[430,285],[428,290],[425,292],[422,296],[420,297],[416,298],[413,299],[411,299],[407,299],[402,297],[397,293],[394,291],[390,287],[388,286],[386,284],[381,281],[387,279],[385,276],[386,276],[391,276],[390,277],[387,276],[386,275],[385,275],[384,275],[382,275],[379,275],[378,275],[377,275],[376,274],[375,274],[374,273],[371,271],[369,270],[369,271],[369,273],[369,274],[370,275],[371,276],[373,277],[375,281],[377,283],[379,285],[382,287],[384,290],[386,291],[389,293],[392,294],[392,295],[392,297],[391,297],[391,298],[389,298],[388,299],[388,300],[386,301],[383,302],[378,305],[375,307],[372,309],[368,310],[360,310],[353,310],[341,311],[329,311],[318,311],[304,310],[295,309],[288,307],[282,305],[271,301],[262,297],[249,290],[243,284],[236,279],[233,276],[228,271],[224,268],[222,264],[221,263],[221,262],[220,261],[220,260],[220,259],[220,258],[220,255],[219,253],[219,251],[219,248],[220,250],[222,251],[223,252],[224,252],[230,255],[233,256],[234,256],[235,256],[236,256],[237,256],[239,256],[239,255],[240,253],[240,252],[241,251],[241,249],[242,247],[244,244],[245,242],[246,239],[248,236],[249,235],[249,234],[250,233],[250,232],[250,231],[250,229],[251,227],[251,226],[251,227],[251,228],[250,228],[249,229],[249,231],[249,232],[248,232],[248,233],[246,233],[246,234],[245,234],[243,234],[242,234],[237,233],[230,232],[226,229],[221,228],[219,227],[218,226],[211,223],[205,219],[200,216],[196,213],[189,208],[184,204],[180,201],[177,197],[173,194],[172,192],[171,189],[170,186],[172,186],[176,185],[179,182],[185,180],[190,177],[195,175],[198,170],[202,163],[204,156],[209,148],[211,142],[212,134],[212,133],[212,135],[212,139],[213,142],[215,146],[216,149],[218,152],[221,157],[223,160],[223,164],[227,168],[229,170],[234,174],[238,178],[242,180],[247,184],[249,185],[251,186],[253,188],[257,189],[259,190],[260,192],[261,192]]},{"type":"style","width":2,"stroke":"#000000","fill":"#FFFFFF"},{"type":"polyline","points":[[211,130],[211,128],[211,127],[211,125],[210,122],[209,120],[208,118],[208,116],[207,113],[204,111],[204,109],[203,105],[201,103],[199,98],[196,95],[195,92],[193,89],[193,87],[192,86],[189,85],[186,84],[182,82],[173,80],[170,79],[168,78],[167,78],[164,78],[162,78],[160,78],[158,78],[155,78],[153,79],[152,79],[151,80],[150,81],[148,82],[147,82],[146,83],[145,84],[144,86],[142,86],[142,87],[140,88],[140,90],[140,92],[140,94],[140,95],[142,96],[142,97],[143,98],[143,99],[144,102],[145,103],[146,104],[149,105],[150,106],[152,107],[154,108],[158,109],[161,112],[164,112],[168,112],[170,112],[172,112],[175,112],[176,111],[177,109],[177,108],[178,107],[178,106],[178,105],[177,104],[177,103],[178,103],[179,103],[180,103],[180,104],[180,105],[182,106],[182,107],[182,109],[182,111],[182,112],[183,115],[183,117],[183,120],[183,122],[183,124],[183,128],[183,130],[183,133],[183,136],[183,138],[183,141],[183,146],[184,149],[184,153],[184,156],[185,160],[185,163],[185,166],[185,169],[185,173],[185,174],[185,176],[186,176],[186,177],[187,177],[188,178],[191,178],[192,177],[193,176],[195,173],[196,171],[197,171],[198,168],[198,165],[200,164],[201,162],[202,161],[203,160],[204,157],[206,156],[208,154],[209,152],[210,149],[210,147],[211,146],[212,144],[212,143],[212,139],[212,138],[212,137],[212,136]]},{"type":"polyline","points":[[433,213],[435,212],[438,211],[442,210],[447,209],[451,208],[453,207],[458,207],[461,205],[468,204],[474,202],[483,201],[491,200],[496,199],[503,197],[509,196],[513,195],[518,195],[522,195],[529,195],[532,195],[536,195],[539,195],[545,195],[546,195],[547,195],[548,195],[551,195],[554,195],[559,196],[561,196],[564,196],[568,199],[569,199],[571,200],[576,202],[576,203],[576,204],[576,206],[575,207],[573,207],[571,208],[570,208],[568,208],[567,208],[565,207],[564,207],[562,207],[560,207],[559,207],[557,207],[556,207],[553,207],[551,207],[550,207],[549,207],[548,207],[547,207],[546,207],[545,207],[543,207],[542,207],[543,207],[545,207],[545,206],[546,206],[547,206],[549,207],[550,208],[553,209],[553,210],[554,211],[554,212],[553,215],[551,215],[550,217],[549,217],[548,218],[546,218],[545,218],[542,218],[539,218],[538,218],[537,218],[533,218],[532,217],[531,217],[530,216],[529,215],[526,214],[525,214],[524,212],[523,212],[522,211],[521,211],[520,211],[518,210],[517,210],[516,210],[514,210],[510,210],[509,210],[508,210],[507,210],[506,211],[505,212],[504,212],[504,214],[502,215],[500,215],[499,217],[494,219],[492,220],[490,223],[488,225],[487,226],[484,227],[482,228],[480,229],[479,232],[475,233],[473,235],[469,237],[465,240],[461,241],[458,243],[453,244],[449,245],[445,248],[443,249],[441,250],[437,251],[435,252],[433,253],[432,254],[427,256],[426,257],[424,258],[421,259],[419,259],[418,259],[419,259],[418,256],[419,252],[419,250],[419,249],[419,247],[419,244],[419,241],[419,237],[419,234],[420,232],[421,229],[424,226],[424,224],[425,223],[426,221],[427,220],[428,218],[431,217],[432,216],[434,215],[434,214]]},{"type":"polyline","points":[[303,145],[303,144],[303,143],[304,141],[305,139],[307,138],[308,137],[309,137],[307,140],[304,141],[303,143]]},{"type":"polyline","points":[[319,134],[322,132],[325,132],[325,134],[326,136],[324,136],[321,136],[318,135]]},{"type":"polyline","points":[[330,116],[330,115],[331,113],[332,110],[336,108],[341,107],[342,106],[343,106],[340,106],[336,109],[333,110],[332,111],[331,113],[331,114],[327,114]]},{"type":"polyline","points":[[289,125],[289,126],[286,126],[284,129],[282,131],[281,133],[281,134],[278,134],[281,134],[284,134],[287,133],[290,133],[293,130],[294,127],[295,125],[295,123],[295,122],[294,120],[292,119],[290,119],[284,123],[280,126],[275,131]]},{"type":"style","width":2,"stroke":"#000000","fill":null},{"type":"polyline","points":[[290,157],[291,157],[291,156],[292,156],[294,156],[295,157],[295,158],[296,158],[297,158],[299,159],[302,159],[303,160],[306,160],[308,160],[311,160],[314,160],[319,160],[320,160],[322,159],[324,158],[327,157],[329,156],[332,155],[335,152],[338,150],[339,149],[340,147],[341,146],[343,144],[344,142],[346,140],[348,138],[348,136],[349,135],[351,133],[352,131],[353,131],[353,130],[354,130],[355,130],[357,128],[359,127],[360,127],[361,126],[362,126]]},{"type":"polyline","points":[[390,47],[393,47],[403,51],[413,55],[415,58],[416,60],[416,63],[415,68],[412,69],[410,70],[411,71],[412,71],[415,71],[415,72],[416,76],[416,77],[414,78],[410,78],[409,78],[409,80],[409,82],[408,82],[407,84],[406,85],[404,86],[401,86],[395,85],[394,84],[391,83],[384,80],[381,78],[380,77]]},{"type":"polyline","points":[[265,41],[263,41],[260,43],[254,45],[249,47],[248,49],[248,52],[248,53],[252,54],[255,54],[254,54],[252,56],[247,58],[243,61],[242,62],[242,63],[245,64],[247,66],[251,68]]},{"type":"polyline","points":[[320,31],[317,31],[314,31],[310,31],[304,34],[299,37],[298,40],[299,42],[304,43],[307,44],[306,47],[301,50],[296,52],[296,55],[296,56],[294,57],[292,58],[290,65],[290,68],[293,71]]},{"type":"polyline","points":[[313,58],[312,59],[309,64],[308,70],[309,74],[315,75],[320,73],[323,69],[324,67],[325,67],[324,72],[325,75],[329,75],[333,74],[336,72],[336,71],[337,72],[338,76],[342,77],[346,79],[350,79],[351,78],[352,73],[352,72],[352,73],[354,70],[356,67]]},{"type":"polyline","points":[[346,41],[347,37],[350,33],[355,30],[361,29],[361,30],[362,33],[363,35],[363,36],[365,35],[372,34],[378,36],[379,37]]},{"type":"style","width":2,"stroke":"#000000","fill":"#FFC480"},{"type":"polyline","points":[[395,91],[395,92],[395,95],[395,96],[395,98],[392,100],[390,103],[389,105],[390,107],[390,108],[394,109],[394,110],[395,112],[395,113],[394,116],[392,120],[388,124],[389,126],[388,128],[389,129],[391,131],[392,133],[392,137],[392,141],[392,146],[394,148],[396,149],[397,149],[397,150],[397,154],[398,158],[402,162],[407,164],[410,165],[413,167],[417,167],[419,162],[420,160],[420,159],[422,159],[423,159],[423,157],[424,157],[429,159],[432,160],[434,156],[434,154],[435,152],[437,152],[437,151],[438,150],[438,147],[439,145],[441,143],[442,142],[443,140],[445,138],[446,136],[446,134],[446,132],[446,131],[446,129],[447,129],[449,128],[450,127],[451,124],[451,122],[452,119],[451,117],[451,115],[449,113],[448,111],[447,110],[445,109],[443,109],[442,109],[442,106],[443,104],[445,102],[446,99],[446,96],[446,94],[443,91],[440,88],[437,87],[432,86],[430,86],[430,85],[430,83],[427,82],[424,82],[418,83],[415,86],[411,87],[410,88],[409,88],[405,88],[400,88],[399,88],[399,87],[399,86],[398,86],[396,87],[394,90],[392,94],[392,96]]},{"type":"style","width":2,"stroke":"#000000","fill":null},{"type":"polyline","points":[[405,105],[405,104],[406,104],[407,103],[410,102],[413,102],[415,102],[414,103],[413,104],[412,108],[411,110],[411,111],[415,113],[419,116],[420,118],[420,121],[420,125],[420,127],[418,129],[420,129],[422,130],[424,133],[425,136],[425,138],[425,141],[423,143],[420,144],[416,144],[415,144],[414,145],[412,146],[409,149]]},{"type":"polyline","points":[[229,277],[227,276],[226,276],[223,274],[221,273],[216,272],[213,272],[207,272],[203,272],[199,271],[197,271],[191,271],[188,271],[185,271],[183,271],[181,272],[179,273],[175,274],[172,275],[171,276],[170,277],[166,279],[164,281],[162,282],[159,283],[157,284],[155,285],[151,287],[149,289],[147,290],[146,290],[143,291],[142,292],[141,292],[139,292],[137,292],[134,292],[131,290],[129,289],[127,289],[125,288],[122,287],[118,285],[119,285],[118,284],[117,283],[115,282],[113,280],[111,277],[111,276],[110,274],[110,272],[110,270],[110,269],[110,267],[110,265],[110,263],[110,261],[110,259],[109,258],[108,257],[107,257],[106,257],[105,257],[103,257],[102,257],[101,259],[99,260],[99,263],[98,264],[98,265],[98,266],[98,267],[98,269],[98,270],[98,272],[95,272],[95,273],[93,273],[93,275],[92,276],[91,277],[91,278],[90,281],[89,282],[89,283],[89,284],[89,285],[89,286],[89,288],[89,289],[89,290],[90,290],[90,291],[91,292],[91,293],[92,294],[92,296],[94,297],[95,298],[97,299],[98,300],[101,301],[102,302],[103,303],[103,305],[105,306],[106,307],[107,309],[108,310],[110,314],[111,315],[113,317],[115,321],[116,322],[118,324],[119,325],[121,326],[123,329],[125,330],[127,331],[130,332],[133,333],[138,333],[140,332],[141,331],[142,330],[143,329],[144,327],[144,326],[147,325],[147,324],[148,323],[149,323],[150,323],[151,322],[152,322],[154,322],[155,322],[155,321],[156,321],[157,321],[158,321],[159,321],[161,321],[163,319],[166,318],[167,318],[169,318],[173,318],[174,318],[177,318],[180,318],[182,318],[185,317],[189,317],[191,315],[192,315],[194,314],[197,313],[199,311],[201,310],[201,309],[204,309],[205,309],[207,309],[209,309],[210,309],[212,309],[212,308],[214,308],[215,308],[217,309],[221,310],[225,312],[228,312],[229,312],[230,313],[235,313],[241,315],[242,315],[245,317],[248,318],[253,319],[254,319],[256,319],[259,320],[260,320],[262,320],[265,320],[266,320],[267,321],[268,321],[270,321],[272,321],[273,321],[274,321],[275,321],[276,321],[278,321],[279,321],[280,321],[281,321],[282,322],[283,322],[284,322],[286,322],[287,322],[289,322],[290,323],[291,323],[297,325],[298,326],[300,327],[300,328],[301,329],[302,330],[303,333],[305,335],[306,337],[308,339],[310,342],[312,344],[311,345],[312,346],[314,350],[316,351],[320,355],[323,357],[325,357],[323,357],[327,359],[328,360],[331,361],[334,362],[336,364],[339,366],[346,368],[350,370],[354,373],[358,374],[360,374],[362,375],[363,375],[366,377],[367,377],[368,379],[369,379],[373,381],[374,382],[376,383],[379,385],[383,388],[385,389],[386,390],[389,392],[391,393],[396,397],[397,398],[399,399],[400,399],[403,401],[405,401],[407,401],[412,401],[415,401],[417,401],[423,401],[425,398],[425,397],[429,396],[430,395],[432,394],[432,393],[433,393],[433,391],[435,391],[436,391],[436,390],[437,389],[438,389],[438,388],[439,387],[439,386],[440,385],[440,383],[441,382],[441,381],[443,379],[444,377],[445,374],[445,373],[446,372],[446,371],[447,370],[448,368],[449,366],[449,365],[450,364],[450,363],[452,362],[452,361],[453,360],[454,358],[456,357],[457,357],[457,356],[456,356],[454,355],[453,355],[452,355],[450,354],[449,354],[448,354],[448,353],[446,353],[446,352],[445,352],[444,349],[441,347],[440,345],[439,344],[439,342],[438,340],[437,339],[436,338],[435,336],[435,335],[435,333],[435,332],[435,331],[433,329],[432,328],[431,327],[430,325],[429,325],[428,325],[427,325],[425,325],[424,327],[423,329],[423,330],[422,332],[421,333],[420,335],[420,337],[419,337],[419,338],[419,339],[419,340],[417,341],[417,342],[416,344],[416,345],[416,346],[416,348],[416,349],[416,352],[416,353],[416,354],[416,355],[416,356],[416,357],[416,358],[416,360],[415,360],[415,361],[415,362],[415,363],[414,363],[414,364],[414,365],[413,366],[413,368],[412,368],[412,369],[411,370],[411,371],[410,372],[410,373],[410,374],[408,374],[408,375],[408,377],[408,378],[407,378]]},{"type":"polyline","points":[[415,358],[414,358],[413,358],[412,358],[411,358],[410,357],[407,357],[405,357],[404,356],[403,356],[401,355],[398,354],[397,352],[396,351],[395,350],[393,348],[393,347],[392,344],[390,343],[390,342],[389,341],[388,340],[388,338],[387,336],[386,335],[385,334],[385,333],[384,333],[383,332],[379,331],[377,330],[373,330],[370,328],[368,327],[367,326],[365,326],[364,326],[363,325],[362,324],[361,323],[360,322],[359,321],[357,319],[357,318],[356,317],[356,316],[355,316],[355,315],[355,314],[354,313],[354,311],[354,310]]},{"type":"style","width":7,"stroke":"#FFC400","fill":null},{"type":"polyline","points":[[268,237],[270,237],[274,239],[277,240],[281,241],[287,243],[291,244],[295,245],[302,245],[311,245],[323,245],[330,244],[335,243],[341,239],[347,237],[347,236],[348,235]]},{"type":"polyline","points":[[305,263],[305,264],[305,265],[307,268],[310,270],[312,270],[314,270],[317,269],[318,266],[318,264],[318,263],[318,264],[320,267],[322,270],[326,271],[328,272],[329,272],[331,270],[333,267],[334,265],[335,264],[335,263],[336,265],[340,269],[344,270],[347,270],[350,270],[350,266],[351,262],[351,259],[350,255],[350,253],[350,250],[350,249],[351,247],[352,247],[353,246],[354,246],[355,247],[355,249],[354,250],[356,250],[358,250],[359,250],[361,249],[363,248],[363,247],[366,246],[366,245],[366,247],[366,252],[366,255],[368,257],[370,258],[371,258],[375,258],[377,257],[379,255],[380,255],[379,258],[378,263],[378,267],[380,271],[382,271],[385,271],[388,269],[391,265],[391,263],[392,262],[392,264],[390,269],[390,275],[392,279],[394,280],[396,280],[400,277],[400,275],[400,279],[401,285],[401,288],[402,288],[407,288],[409,287],[411,286],[412,282],[412,279]]},{"type":"polyline","points":[[211,169],[210,170],[210,172],[208,174],[207,177],[205,180],[204,184],[202,186],[199,187],[197,188],[195,189],[192,190],[191,192],[191,193],[191,194],[195,195],[202,197],[206,197],[209,196],[213,195],[213,192],[213,193],[211,195],[210,197],[210,201],[209,203],[209,205],[210,208],[213,208],[220,208],[226,208],[227,204],[227,203],[225,205],[224,208],[223,210],[222,213],[224,214],[227,214],[232,214],[236,213],[236,212],[234,215],[232,220],[232,221],[233,221],[239,221],[243,221],[247,220],[249,215],[249,214],[249,217],[247,220],[247,223],[247,226],[248,226],[252,226],[258,226],[262,223],[265,223],[264,223],[263,223]]},{"type":"style","width":22,"stroke":"#FFFFFF","fill":null},{"type":"polyline","points":[[221,285],[220,285],[219,284],[218,284],[217,283],[215,283],[215,282],[214,281],[215,281],[217,281],[218,281],[219,281],[219,282],[218,281],[217,280],[215,280],[214,279],[214,277],[213,277],[211,276],[210,275],[209,275],[208,274],[205,274],[203,274],[202,274],[198,274],[196,274],[195,274],[194,273],[192,273],[188,273],[187,273],[184,273],[181,274],[179,275],[177,276],[175,277],[172,279],[170,281],[168,282],[167,283],[163,284],[161,287],[157,288],[153,290],[151,290],[149,290],[147,290],[143,290],[140,290],[137,289],[132,288],[131,287],[129,284],[128,283],[124,281],[123,279],[121,276],[119,275],[118,274],[116,272],[116,270],[114,267],[113,264],[112,262],[111,259],[109,257],[107,257],[105,256],[102,256],[98,258],[97,260],[96,263],[96,265],[96,267],[96,271],[96,273],[96,275],[96,276],[95,277],[93,281],[91,284],[91,290],[93,296],[101,304],[105,307],[110,311],[111,312],[112,313],[112,314],[113,315],[114,316],[116,319],[118,321],[121,323],[125,327],[126,328],[129,330],[134,331],[136,331],[137,330],[138,329],[141,327],[143,324],[143,323],[144,322],[148,321],[149,320],[153,319],[158,319],[165,319],[169,317],[171,316],[175,315],[179,313],[183,313],[186,312],[191,311],[195,311],[201,311],[206,311],[209,311],[212,311],[214,311],[218,313],[223,314],[228,314],[230,315],[233,316],[238,318],[248,322],[258,325],[262,327],[269,330],[278,332],[282,333],[284,334],[288,336],[297,338],[298,338],[301,338],[300,338],[300,339],[295,338],[286,334],[278,329],[277,328],[275,327],[273,326],[272,324],[271,324],[271,323],[273,323],[278,323],[287,326],[287,324],[288,324],[288,325],[289,326],[289,328],[291,331],[293,332],[296,334],[296,335],[297,337],[298,338],[294,338],[294,339],[295,341],[299,342],[299,343],[300,342],[300,343],[302,343],[302,344],[302,345],[302,344],[304,348],[307,350],[308,351],[310,352],[316,356],[321,358],[320,359],[320,361],[325,364],[330,367],[336,370],[343,373],[349,376],[354,376],[353,376],[354,376],[357,376],[355,376],[361,376],[368,379],[374,382],[381,384],[390,388],[393,390],[395,391],[396,391],[397,392],[400,393],[401,394],[402,394],[404,395],[409,395],[411,396],[415,396],[417,396],[420,396],[421,396],[424,396],[426,396],[428,395],[429,394],[431,393],[432,392],[432,391],[433,388],[435,386],[436,384],[437,380],[437,377],[439,375],[440,371],[441,369],[442,368],[443,366],[444,363],[445,361],[446,360],[448,358],[448,355],[449,354],[449,353],[449,352],[449,351],[449,350],[446,349],[445,346],[442,345],[441,344],[439,342],[436,339],[434,336],[433,334],[431,330],[429,328],[428,326],[427,325],[426,325],[425,325],[424,325],[420,327],[419,329],[418,331],[418,335],[418,338],[417,342],[417,344],[417,347],[416,351],[415,354],[413,357],[412,360],[411,362],[410,364],[409,366],[408,368],[406,367],[404,366],[402,362],[401,359],[401,357],[400,354],[397,351],[395,349],[393,346],[389,344],[387,342],[386,339],[385,337],[381,336],[379,334],[378,334],[376,331],[374,330],[370,329],[368,329],[364,328],[361,328],[359,327],[355,325],[354,325],[353,324],[353,322],[353,321],[352,321],[352,322],[352,324],[352,325],[351,326]]},{"type":"style","width":2,"stroke":"#000000","fill":"#FFFFFF"},{"type":"polyline","points":[[354,264],[352,264],[350,264],[349,264],[347,264],[344,264],[342,265],[340,265],[337,266],[333,270],[331,271],[330,273],[326,276],[325,278],[324,281],[324,286],[324,290],[323,296],[324,302],[324,306],[324,311],[325,314],[325,318],[325,322],[325,326],[325,330],[325,336],[325,340],[325,345],[325,351],[324,354],[323,358],[323,362],[323,367],[324,370],[323,372],[323,375],[323,377],[324,380],[325,383],[326,385],[328,386],[330,387],[331,387],[337,390],[340,391],[341,391],[343,390],[345,387],[346,385],[347,384],[348,382],[349,381],[351,378],[351,377],[352,376],[353,376],[353,375],[354,374],[356,373],[360,370],[362,369],[364,366],[366,365],[368,362],[370,359],[371,356],[372,351],[374,346],[375,342],[375,337],[374,330],[372,327],[371,322],[371,317],[370,311],[369,305],[369,301],[369,295],[369,290],[370,287],[370,282],[371,278],[371,273],[371,269],[369,264],[365,258],[361,257],[350,257],[342,261],[337,265]]},{"type":"polyline","points":[[326,356],[326,355],[328,352],[329,348],[331,345],[334,342],[335,338],[337,335],[338,332],[340,330],[342,326],[345,322],[346,321],[346,319],[348,319],[350,319],[352,319],[353,320],[354,321],[355,322],[357,325],[357,327],[358,328],[358,329],[358,330],[358,331],[358,332],[358,334],[358,335],[358,336],[358,338],[358,339],[358,342],[359,342],[360,343],[362,345],[363,346],[365,347],[365,348],[366,351],[366,353],[367,354],[368,356],[368,359],[366,360],[366,362],[366,363],[365,364],[363,367],[362,368],[361,370],[361,371],[360,372],[358,373],[355,377],[353,379],[351,381],[349,384],[345,386],[343,387],[342,388],[339,388],[337,389],[333,389],[329,389],[329,388],[328,388],[328,387],[327,385],[325,381],[325,378],[324,373],[322,369],[322,363],[322,359],[322,356],[322,354],[324,351],[325,350],[327,348],[329,348]]},{"type":"polyline","points":[[278,230],[278,228],[276,228],[275,227],[273,226],[271,226],[270,226],[268,226],[267,226],[266,226],[261,227],[258,228],[253,230],[251,230],[246,231],[245,232],[242,233],[241,234],[237,236],[236,239],[235,241],[234,243],[233,245],[233,250],[232,253],[229,256],[229,260],[230,265],[230,268],[232,272],[232,275],[233,280],[233,283],[235,289],[235,292],[237,297],[238,300],[239,304],[241,307],[241,310],[242,314],[243,317],[244,320],[244,322],[245,323],[245,324],[245,325],[245,326],[246,327],[247,329],[247,331],[248,333],[248,335],[250,337],[250,339],[250,340],[250,341],[250,342],[251,343],[251,345],[251,346],[252,347],[252,348],[252,349],[252,350],[252,351],[252,353],[252,354],[252,355],[251,355],[251,356],[251,357],[250,358],[248,359],[246,362],[245,362],[245,364],[243,365],[241,366],[238,367],[236,368],[233,371],[228,372],[226,373],[226,374],[225,374],[225,375],[225,378],[225,379],[225,380],[226,381],[226,382],[226,384],[226,386],[226,387],[227,388],[227,390],[227,391],[227,392],[227,395],[228,396],[228,398],[228,399],[229,400],[229,401],[230,402],[231,403],[233,404],[234,405],[235,405],[236,405],[237,405],[237,404],[238,404],[241,403],[241,402],[241,401],[243,401],[243,400],[243,399],[244,398],[244,397],[244,396],[245,396],[245,395],[246,393],[246,392],[248,391],[250,391],[252,391],[251,390],[252,390],[253,389],[255,389],[255,388],[256,388],[258,388],[258,387],[258,386],[259,386],[260,386],[260,384],[261,384],[262,384],[263,383],[264,382],[267,382],[267,381],[269,380],[269,379],[271,379],[272,379],[272,378],[276,378],[277,376],[277,375],[279,375],[280,375],[283,375],[284,375],[285,375],[287,375],[287,374],[288,374],[288,373],[289,372],[289,371],[289,370],[291,368],[291,367],[292,366],[292,365],[293,364],[293,363],[293,362],[294,362],[294,360],[294,359],[295,359],[295,358],[294,357],[294,355],[293,354],[293,353],[293,351],[293,350],[293,349],[293,348],[294,348],[294,347],[293,347],[293,346],[293,345],[292,343],[292,342],[292,341],[291,339],[289,337],[289,335],[288,334],[288,333],[287,331],[287,329],[286,326],[286,325],[286,323],[286,322],[285,320],[285,318],[285,316],[285,315],[285,314],[285,313],[285,312],[286,312],[286,310],[286,309],[286,308],[286,307],[286,306],[286,305],[286,304],[286,302],[286,301],[286,299],[286,297],[286,294],[286,291],[286,288],[286,285],[287,283],[286,280],[286,276],[286,273],[286,269],[285,266],[285,260],[285,257],[285,252],[285,249],[285,247],[285,243],[285,240],[285,238],[285,235],[284,233],[284,231],[283,229],[281,227],[280,226],[278,224],[276,224]]},{"type":"style","width":2,"stroke":"#000000","fill":"#C4C4C4"},{"type":"polyline","points":[[372,309],[371,310],[372,310],[374,309],[376,306],[377,305],[378,304],[379,302],[380,301],[380,299],[381,297],[382,296],[382,294],[384,293],[389,293],[390,290],[389,288],[389,286],[389,281],[389,279],[389,277],[388,274],[387,272],[385,269],[384,266],[381,263],[379,261],[378,258],[377,256],[376,255],[372,253],[371,253],[369,251],[366,251],[364,249],[360,248],[354,246],[351,245],[350,245],[347,245],[345,245],[343,245],[342,245],[341,245],[339,245],[338,245],[334,246],[333,247],[332,247],[330,248],[329,249],[328,251],[328,252],[326,253],[326,254],[326,255],[325,255],[325,256],[324,257],[323,259],[323,260],[322,262],[322,264],[321,266],[317,268],[317,270],[318,273],[318,277],[320,279],[320,282],[321,286],[320,289],[321,293],[322,296],[322,298],[323,301],[324,303],[325,304],[325,305],[326,306],[326,307],[328,309],[328,306],[326,303],[326,298],[326,293],[326,287],[326,282],[326,278],[329,274],[331,271],[333,268],[338,265],[341,263],[344,262],[346,261],[349,261],[354,261],[356,261],[357,261],[363,262],[371,264],[373,267],[372,267],[372,269],[373,272],[374,276],[375,279],[373,283],[372,286],[371,291],[368,293],[367,296],[366,298],[366,300],[365,302],[364,304]]},{"type":"polyline","points":[[240,306],[240,304],[240,302],[241,302],[241,300],[241,298],[240,295],[239,293],[238,291],[238,288],[236,287],[236,285],[235,283],[235,281],[234,278],[234,277],[234,275],[234,274],[234,273],[233,270],[233,268],[233,267],[232,266],[232,265],[232,261],[232,259],[232,258],[232,254],[232,252],[232,250],[232,248],[233,245],[233,244],[234,243],[235,241],[235,238],[236,237],[238,235],[239,234],[240,232],[243,229],[244,228],[247,227],[249,226],[251,226],[254,225],[256,224],[261,222],[264,222],[267,222],[271,222],[275,222],[280,224],[281,224],[281,225],[283,226],[285,229],[287,232],[288,233],[289,236],[289,237],[290,240],[290,243],[290,245],[290,248],[290,250],[290,252],[289,254],[288,256],[288,257],[288,258],[288,260],[288,261],[288,262],[288,264],[290,266],[291,267],[291,268],[293,268],[295,268],[299,269],[307,271],[311,272],[312,272],[312,273],[312,274],[313,275],[314,277],[315,280],[316,282],[317,284],[319,285],[319,286],[319,288],[320,289],[320,290],[321,290],[321,291],[321,292],[321,293],[321,294],[321,296],[322,297],[322,298],[322,299],[322,300],[322,302],[322,304],[322,305],[322,307],[323,308],[323,309],[323,310],[323,311],[323,313],[323,315],[323,317],[323,319],[323,321],[323,322],[323,324],[323,325],[323,326],[322,327],[321,330],[321,331],[321,332],[321,333],[320,333],[317,334],[314,335],[311,335],[309,335],[307,335],[301,334],[299,333],[298,333],[296,333],[294,332],[293,332],[291,331],[291,330],[290,328],[289,327],[288,325],[285,322],[285,320],[284,319],[283,318],[283,316],[283,313],[283,308],[283,306],[284,302],[285,300],[285,295],[286,292],[288,290],[286,286],[286,284],[286,281],[286,277],[286,275],[286,274],[286,272],[286,268],[285,266],[285,265],[285,262],[285,260],[284,258],[283,255],[283,251],[282,249],[281,247],[283,245],[286,245],[290,245],[293,245],[291,244],[289,243],[285,242],[280,241],[273,238],[267,237],[262,234],[259,234],[257,234],[256,234],[253,234],[251,234],[246,234],[244,236],[240,237],[238,238],[237,239],[236,241],[236,244],[235,246],[234,247],[234,249],[234,252],[231,255]]},{"type":"style","width":22,"stroke":"#C4C4FF","fill":"#C4C4FF"},{"type":"polyline","points":[[160,139],[21,210]]},{"type":"polyline","points":[[153,158],[36,223]]},{"type":"polyline","points":[[131,183],[32,231]]},{"type":"polyline","points":[[125,200],[33,248]]},{"type":"polyline","points":[[139,218],[31,259]]},{"type":"polyline","points":[[154,230],[51,282]]},{"type":"polyline","points":[[185,250],[62,292]]},{"type":"polyline","points":[[173,271],[59,307]]},{"type":"polyline","points":[[179,280],[75,322]]},{"type":"polyline","points":[[190,293],[72,330]]},{"type":"polyline","points":[[147,317],[101,332]]},{"type":"style","width":22,"stroke":"#FFC480","fill":"#C4C4FF"},{"type":"polyline","points":[[170,158],[96,196]]},{"type":"polyline","points":[[164,176],[114,201]]},{"type":"polyline","points":[[168,201],[115,217]]},{"type":"polyline","points":[[181,223],[122,233]]},{"type":"polyline","points":[[181,240],[137,249]]},{"type":"polyline","points":[[203,251],[130,278]]},{"type":"polyline","points":[[182,277],[179,279]]},{"type":"polyline","points":[[179,279],[176,260]]},{"type":"style","width":22,"stroke":"#FFC4FF","fill":"#C4C4FF"},{"type":"polyline","points":[[160,121],[161,122],[162,124],[162,128],[163,130],[163,132],[163,133],[163,134],[163,137],[164,140],[164,141],[164,142],[165,144],[166,145],[166,146],[165,147],[165,149],[166,150],[166,154],[165,156],[165,157],[165,158],[166,161],[166,162],[166,165],[165,166],[164,167],[162,169],[160,170],[157,172],[155,173],[154,175],[152,178],[152,182],[151,188],[151,191],[152,194],[155,197],[160,198],[161,198],[162,200],[162,203],[162,206],[161,207],[161,208],[160,210],[161,212],[162,213],[163,215],[168,216],[169,219],[173,220],[175,221],[176,222],[177,224],[177,226],[177,228],[178,232],[182,233],[185,234],[190,235],[193,235],[193,234],[190,232],[189,232],[188,232],[188,230],[187,229],[188,230],[195,233],[199,234],[199,235],[199,236],[198,237],[196,237],[193,237],[189,239],[186,242],[185,245],[184,249],[180,252],[179,257],[178,259],[179,260],[188,261],[189,261],[189,263],[190,263],[186,261],[170,257],[153,253],[145,249],[143,242],[144,236],[148,227],[153,221],[154,218],[152,218],[142,218],[139,215],[139,212],[140,210],[144,202],[149,197],[149,196],[142,195],[123,192],[112,188],[112,182],[120,167],[126,159],[129,158],[127,163],[115,171],[95,182],[88,184],[93,186],[119,186],[137,186],[138,188],[133,195],[120,205],[111,209],[112,210],[134,213],[147,215],[147,216],[147,218],[141,222],[136,224],[134,225],[143,226],[156,227],[157,227],[156,231],[146,237],[137,240]]},{"type":"polyline","points":[[174,235],[172,235],[169,238],[167,239],[160,243],[158,244],[156,244],[162,244],[180,243],[186,244],[187,248],[185,252],[181,259],[177,266],[177,267],[182,264],[192,262],[193,258],[195,255],[196,253],[199,250],[203,248],[204,246],[205,245],[205,247],[203,253],[201,257],[199,261],[197,264],[196,268],[195,270],[193,272],[189,275],[185,278],[182,282],[181,284],[183,280],[192,276],[198,275],[199,274],[198,279],[192,288],[188,296],[185,301],[194,297],[208,290],[213,287],[210,292],[197,302],[191,306],[189,307],[190,306],[195,299],[203,297],[205,297],[206,300],[204,305],[194,314],[183,319],[174,321],[166,321],[160,321],[158,322],[155,323],[151,324],[148,326],[143,327],[140,330],[137,332],[136,333],[136,334],[136,335],[136,336],[135,340],[135,341],[136,340],[145,338],[158,335],[180,333],[185,330],[190,326],[193,324],[197,321],[202,318],[204,316],[205,314],[205,313],[205,310],[204,308],[204,307],[202,302],[201,299],[201,298],[201,297],[201,296],[201,295],[201,291],[202,290],[203,287],[205,284],[206,284],[207,282],[209,281],[210,279],[210,277],[207,275],[205,272],[202,268],[201,267],[199,265],[199,263],[194,260],[190,256],[184,252],[173,245]]},{"type":"polyline","points":[[153,28],[155,27],[156,23],[164,15],[174,13],[182,11],[185,12],[191,17],[194,18],[201,18],[206,16],[208,15],[207,20],[202,27],[193,36],[187,38],[173,39],[169,39],[168,40],[166,42],[161,43],[149,43],[146,42],[143,38],[142,32],[140,30],[139,29],[133,29],[127,30],[123,32],[114,36],[108,39],[107,44],[108,47],[113,53],[120,57],[135,60],[147,60],[153,53],[156,48],[161,42],[167,38],[172,33],[179,29],[184,26],[190,26],[191,26],[193,29],[193,34],[192,39],[185,40],[177,40],[159,40],[146,40],[139,40],[135,41],[133,44],[130,49],[130,51],[130,50],[130,49]]},{"type":"polyline","points":[[154,118],[153,118],[149,118],[140,118],[134,120],[130,122],[125,126],[118,129],[112,133],[106,135],[97,139],[74,140],[64,140],[56,138],[53,138],[52,141],[52,146],[59,152],[65,153],[84,152],[98,143],[105,135],[113,127],[121,123],[133,122],[145,122],[148,125],[148,130],[148,136],[146,140],[142,144],[128,148],[109,148],[99,148],[95,148],[91,147],[88,147],[93,143],[110,140],[132,141],[135,143],[133,147],[130,153],[126,158],[121,161],[120,162]]},{"type":"polyline","points":[[502,63],[502,62],[502,59],[505,55],[507,51],[512,46],[515,46],[519,45],[525,45],[530,48],[532,50],[534,52],[541,54],[546,52],[555,48],[561,45],[568,41],[573,40],[581,39],[584,39],[587,40],[601,44],[604,48],[606,53],[604,60],[600,66],[600,70],[608,68],[612,67],[616,67],[623,71],[628,74],[631,79],[635,85],[636,88],[636,93],[636,96],[635,101],[634,103],[629,106],[629,107],[626,107],[621,107],[616,104],[609,102],[605,100],[601,96],[595,92],[589,87],[583,81],[580,77],[575,75],[571,75],[568,75],[566,77],[563,78],[558,79],[556,79],[551,78],[547,76],[540,74],[533,73],[527,72],[522,68],[521,64],[521,59],[524,57],[531,52],[544,51],[554,52],[565,57],[571,58],[577,58],[579,57],[580,56],[583,55],[584,55],[580,57],[565,58],[542,60],[539,61],[543,61],[557,61],[572,62],[580,65],[581,68],[586,72],[592,78],[594,80],[596,82],[598,83],[599,85],[601,86],[606,88],[607,88],[611,89],[614,89],[615,89]]},{"type":"style","width":10,"stroke":"#FFC4FF","fill":null},{"type":"polyline","points":[[468,110],[469,110],[471,109],[472,107],[475,103],[482,97],[488,94],[495,90],[506,88],[519,86],[529,86],[536,86],[542,86],[544,86],[542,92],[529,104],[509,114],[496,118],[490,121],[489,124],[487,125],[486,126],[486,127],[487,126],[488,126],[489,126],[490,125],[493,124],[500,121],[510,121],[524,120],[531,120],[532,121],[532,123],[533,128],[530,134],[521,139],[507,146],[501,150],[498,153],[506,151],[521,151],[536,153],[537,154],[535,159],[526,165],[520,170],[522,170],[529,168],[533,168],[537,168],[537,171],[533,177],[529,180],[523,180],[516,180],[515,180]]},{"type":"polyline","points":[[403,197],[404,197],[405,193],[415,184],[436,170],[461,152]]},{"type":"polyline","points":[[423,194],[424,193],[429,192],[439,188],[471,185]]},{"type":"style","width":19,"stroke":"#FFFFFF","fill":null},{"type":"polyline","points":[[112,113],[112,114],[107,120],[92,129],[86,134],[92,132],[105,126],[110,123],[115,121],[122,121],[131,124],[136,125],[137,126],[138,127],[139,127],[140,127],[141,126],[139,125],[138,125],[136,123],[129,119],[128,118],[128,117],[129,116],[129,115],[132,115],[135,115],[135,116],[137,120],[137,123],[137,125],[137,127],[135,128],[137,128],[139,128],[141,125],[141,124],[141,123],[141,122],[142,122],[143,120],[145,120],[146,120],[146,119],[147,119],[146,119],[146,118],[145,118],[143,117],[142,116],[142,114],[142,112],[143,112],[145,112],[143,112],[146,115],[149,116],[151,117],[153,117],[153,118],[155,118],[157,118],[159,118],[162,119],[166,120],[169,121],[170,121],[170,124],[171,125],[171,128],[170,132],[170,134],[165,136],[159,137],[149,137],[142,137],[142,136],[143,135],[152,134],[158,134],[154,134],[153,139],[148,147],[141,149],[138,149],[137,147],[144,141],[153,140],[156,140],[157,142],[156,146],[154,148],[154,146],[158,144],[161,143],[164,143],[165,143],[166,143],[167,144],[169,148],[172,151],[173,153],[172,156],[169,158],[165,159],[164,159],[170,159],[174,159],[175,159],[175,162],[174,167],[168,172],[158,173],[148,171],[144,169],[143,165],[146,162],[150,161],[148,161],[142,164],[127,165],[115,164],[111,159],[113,152],[124,150],[135,150],[137,150],[134,151],[130,157],[113,164],[92,166],[89,162],[92,155],[101,144],[112,140],[118,137],[122,141],[122,148],[115,155],[102,156],[102,158],[106,151],[125,148],[134,148],[132,148],[131,159],[116,170],[97,176],[85,177],[93,177],[103,172],[123,168],[129,168],[127,170],[123,182],[113,192],[99,195],[91,198],[103,194],[114,187],[127,187],[136,193],[137,201],[118,209],[99,217],[92,217],[91,210],[99,201],[118,198],[127,198],[136,205],[137,212],[128,221],[116,228],[104,228],[104,224],[117,214],[145,212],[163,212],[171,213],[170,218],[163,231],[144,238],[123,240],[116,237],[113,231],[120,222],[134,215],[148,213],[154,218],[157,226],[154,233],[142,239],[125,242],[119,241],[120,237],[126,233],[155,230],[178,230],[182,231],[182,236],[179,245],[167,255],[140,259],[126,259],[122,259],[128,253],[152,246],[192,242],[194,242],[186,248],[168,260],[145,268],[127,268],[124,268],[126,264],[144,254],[165,254],[169,256],[170,262],[160,274],[144,285],[127,286],[123,284],[124,278],[147,274],[171,272],[183,278],[187,286],[183,291],[167,298],[155,299],[147,298],[150,295],[162,288],[191,286],[195,286],[181,285],[161,292],[113,301],[80,301],[76,301],[76,297],[81,290],[97,284],[129,282],[145,282],[145,286],[144,294],[137,304],[130,311],[122,319],[120,321],[120,322],[120,321],[122,316],[139,301],[158,296],[183,295],[183,292],[180,293],[176,301],[168,308],[140,314],[116,314],[112,314],[118,312],[146,302],[184,297],[192,297],[191,300],[183,305],[175,310],[168,310],[169,304],[173,297],[190,290],[199,290],[195,291],[198,297],[197,303],[177,307],[166,307],[161,304],[165,298],[188,291],[210,291],[212,292],[211,295],[208,299],[204,303],[196,306],[186,306],[178,306],[177,306],[189,300],[206,300],[213,303],[216,308],[212,310],[203,314],[178,314],[171,314],[171,313],[183,313],[187,313],[187,314],[185,317],[179,317],[173,317],[172,317],[177,316],[191,318],[197,321],[197,323],[195,325],[190,327],[183,327],[181,327]]},{"type":"polyline","points":[[78,137],[62,136],[42,137],[38,148],[34,152],[34,156],[40,156],[65,156],[78,152],[79,150],[75,152],[65,157],[63,160],[70,162],[93,163],[108,162],[109,160]]},{"type":"polyline","points":[[513,77],[512,77],[512,75],[510,73],[507,69],[507,66],[507,64],[508,61],[511,58],[514,56],[520,54],[527,54],[534,57],[534,58],[539,65],[540,67],[544,64],[547,59],[554,52],[560,49],[569,48],[575,48],[580,50],[585,56],[586,58],[587,63],[583,67],[579,71],[585,69],[593,69],[594,71],[599,74],[606,80],[610,84],[611,88],[613,96],[615,100],[615,102],[613,107],[610,111],[606,112],[597,112],[590,109],[579,104],[569,100],[561,96],[555,93],[548,92],[540,92],[535,92],[531,90],[527,88],[524,85],[519,80],[518,75],[517,72],[518,68],[521,66],[526,65],[531,66],[538,71],[544,71],[547,71],[552,68],[556,64],[559,63],[563,63],[566,63],[567,66],[567,71],[562,76],[546,76],[537,76],[546,78],[558,78],[567,78],[568,78],[571,80],[579,84],[582,85],[585,86],[587,86],[591,90],[597,92],[598,92],[599,92],[600,92],[600,94],[601,97],[601,99],[601,100],[600,102],[599,104],[601,105],[603,106]]},{"type":"polyline","points":[[208,32],[208,29],[209,26],[209,25],[207,24],[202,22],[197,22],[194,22],[192,22],[188,22],[184,26],[182,27],[179,29],[179,30],[178,30],[173,30],[172,29],[171,31],[170,31],[169,32],[166,31],[164,33],[161,34],[158,34],[157,35],[156,36],[154,40],[154,42],[154,43],[151,38],[147,34],[144,30],[142,26],[139,24],[137,22],[135,22],[130,22],[127,24],[121,27],[120,31],[119,35],[119,40],[120,43],[122,49],[124,51],[126,55],[126,58],[127,61],[127,63],[124,63],[136,65],[144,63],[150,60],[153,53],[154,51],[155,48],[155,44],[154,43],[150,42],[142,42],[138,42],[135,42],[134,43],[133,45],[132,48],[132,49],[135,49],[149,50],[158,50],[159,50],[161,50],[163,49],[166,49],[166,48],[167,48],[170,47],[177,44],[187,40],[190,39],[194,36],[198,34],[200,33],[201,31],[202,31],[201,33],[197,38],[190,44],[191,45],[191,46],[187,46],[185,46]]},{"type":"style","width":19,"stroke":"#FFC4FF","fill":null},{"type":"polyline","points":[[338,368],[338,367],[339,363],[342,360],[344,358]]},{"type":"polyline","points":[[274,147],[273,145],[271,145],[269,145],[267,145],[264,145],[261,148],[260,150],[260,152],[258,152],[260,154]]},{"type":"polyline","points":[[356,119],[356,116],[357,116],[361,115],[364,116]]},{"type":"style","width":19,"stroke":"#FFFFFF","fill":null},{"type":"polyline","points":[[194,108],[194,107],[194,106],[194,105],[194,103],[194,102],[193,102],[193,101],[193,100],[192,99],[191,98],[190,94],[187,92],[187,91],[185,89],[183,87],[182,86],[181,84],[180,83],[177,82],[175,81],[174,80],[172,80],[167,78],[162,77],[159,77],[157,77],[153,77],[149,77],[145,78],[143,82],[142,84],[142,85],[141,86],[142,87],[142,89],[143,91],[144,93],[147,95],[149,97],[152,100],[155,102],[158,102],[164,102],[167,103],[169,102],[172,102],[173,102],[174,102],[175,102],[176,104],[179,107],[181,110],[182,112],[183,114],[183,115],[181,116],[181,118],[181,121],[181,124],[181,128],[182,132],[182,135],[183,140],[184,142],[184,145],[184,148],[185,151],[185,153],[185,156],[185,158],[184,159],[184,160],[183,160],[183,161],[183,162],[182,164],[181,164],[180,164]]},{"type":"polyline","points":[[440,211],[440,210],[441,209],[443,208],[444,205],[448,204],[451,203],[456,203],[458,202],[461,202],[468,202],[474,202],[480,201],[484,200],[489,197],[494,197],[500,196],[505,196],[509,195],[514,195],[518,194],[524,194],[530,194],[537,194],[541,194],[547,194],[551,194],[556,194],[561,194],[564,194],[567,195],[570,195],[571,196],[572,197],[573,197],[573,199],[573,202],[573,203],[572,204],[570,204],[569,205],[565,205],[561,205],[558,205],[556,206],[554,206],[550,206],[549,207],[549,209],[547,211],[546,212],[543,213],[541,214],[538,214],[533,214],[531,214],[525,212],[519,211],[517,211],[514,211],[509,211],[506,211],[502,211],[498,212],[494,214],[491,217],[487,220],[483,222],[481,223],[476,227],[472,229],[468,230],[465,231],[462,234],[459,235],[454,237],[451,239],[449,240],[446,240],[444,243],[443,244],[441,245],[438,246],[437,247],[435,248],[434,249],[433,249],[432,251],[430,252],[429,253],[428,254],[428,255],[427,256]]},{"type":"style","width":2,"stroke":"#000000","fill":"#80C4FF"},{"type":"polyline","points":[[241,131],[239,131],[238,131],[237,131],[234,131],[233,131],[232,131],[231,131],[230,130],[229,129],[226,128],[225,128],[224,128],[222,128],[219,129],[217,130],[216,130],[215,132],[213,135],[211,136],[211,138],[210,139],[209,140],[209,141],[206,144],[205,144],[204,146],[202,146],[201,147],[200,147],[197,148],[196,149],[194,151],[192,152],[190,153],[188,154],[185,156],[183,159],[181,161],[178,164],[177,167],[175,171],[170,173],[168,174],[168,177],[167,178],[167,180],[167,184],[167,186],[167,189],[168,192],[169,195],[170,197],[173,203],[175,205],[178,209],[179,211],[183,215],[185,218],[189,221],[190,224],[194,226],[198,228],[202,229],[205,231],[210,233],[212,233],[215,234],[216,234],[220,234],[222,234],[225,234],[229,234],[230,233],[232,232],[233,231],[235,230],[235,228],[236,227],[238,225],[240,223],[240,220],[241,219],[242,217],[244,212],[247,210],[248,208],[250,206],[253,205],[256,203],[258,202],[262,202],[263,201],[264,201],[269,201],[270,201],[270,202],[270,206],[268,209],[263,212],[259,214],[257,215],[255,216],[252,217],[251,218],[251,219],[250,220],[250,222],[250,223],[251,223],[252,223],[255,220],[258,219],[260,218],[264,216],[267,215],[268,214],[271,213],[273,210],[275,209],[275,208],[276,206],[278,205],[279,202],[280,199],[280,197],[279,194],[275,192],[272,190],[270,189],[270,188],[266,186],[263,185],[261,184],[258,183],[255,180],[252,177],[251,175],[250,173],[248,171],[245,166],[245,164],[242,159],[241,154],[240,152],[240,149],[240,146],[240,144],[240,142],[241,140],[243,138],[244,137],[245,136],[248,135],[249,134],[249,133],[249,132],[250,130],[251,130],[251,132],[250,132]]},{"type":"polyline","points":[[404,155],[404,153],[405,153],[409,153],[411,153],[412,153],[414,153],[415,155],[417,155],[418,155],[419,156],[420,157],[422,158],[427,160],[429,162],[428,162],[430,165],[434,168],[437,172],[439,175],[440,179],[443,183],[445,187],[446,190],[447,193],[448,200],[450,206],[451,214],[452,223],[452,230],[453,236],[453,242],[453,246],[454,251],[454,254],[454,260],[453,263],[453,269],[451,275],[448,282],[442,290],[440,295],[437,299],[433,301],[430,303],[427,304],[418,304],[414,304],[411,304],[407,301],[401,299],[397,298],[397,297],[396,296],[395,294],[395,292],[393,290],[392,288],[391,284],[391,281],[391,279],[391,275],[390,273],[390,271],[390,267],[390,265],[390,263],[388,259],[388,256],[388,252],[388,249],[387,243],[385,239],[381,233],[379,227],[374,221],[372,219],[368,215],[366,214],[365,214],[362,214],[359,215],[358,217],[357,220],[357,222],[357,224],[358,228],[359,232],[363,237],[367,243],[370,246],[373,251],[374,253],[376,256],[375,256],[375,257],[375,258],[375,260],[374,260],[373,258],[368,255],[363,252],[360,249],[364,249],[362,246],[356,241],[352,238],[351,234],[349,230],[348,227],[346,225],[345,223],[344,219],[343,217],[342,214],[342,211],[342,209],[343,207],[344,205],[348,200],[351,199],[352,199],[353,198],[357,198],[359,198],[361,197],[365,196],[367,194],[370,193],[373,190],[375,188],[377,184],[379,181],[382,177],[384,174],[386,169],[389,166],[392,163],[394,160],[397,159],[400,157],[401,156],[404,155],[407,155],[409,155],[410,155],[411,155],[413,155]]},{"type":"style","width":1,"stroke":"#000000","fill":"#FFFFFF"},{"type":"polyline","points":[[266,199],[267,199],[268,199],[270,199],[272,199],[273,199],[274,199],[277,199],[281,201],[284,202],[287,205],[293,207],[296,208],[297,209],[303,212],[307,214],[309,215],[311,216],[313,217],[314,220],[315,221],[315,222],[315,223],[315,224],[315,225],[315,226],[314,226],[314,228],[314,229],[314,230],[314,231],[314,232],[314,233],[314,234],[314,235],[314,238],[313,239],[312,240],[312,242],[311,242],[311,245],[308,247],[308,248],[307,249],[305,250],[304,250],[301,251],[299,253],[298,254],[297,255],[296,256],[295,256],[293,257],[292,257],[291,258],[289,258],[289,259],[288,259],[287,259],[286,259],[284,259],[283,259],[282,259],[282,261],[281,261],[280,261],[280,258],[280,257],[280,256],[281,255],[282,251],[283,250],[283,249],[282,250],[280,251],[279,253],[278,254],[276,254],[276,251],[276,250],[276,249],[276,248],[276,247],[278,247],[278,246],[278,245],[279,245],[279,242],[280,241],[280,240],[281,240],[281,239],[282,238],[283,237],[284,235],[284,234],[284,233],[286,233],[287,232],[288,232],[288,231],[288,230],[288,229],[287,229],[287,228],[286,228],[284,228],[282,228],[281,228],[280,228],[279,228],[278,228],[276,228],[275,228],[274,228],[272,228],[271,229],[268,229],[267,230],[265,230],[264,231],[262,231],[259,231],[257,231],[254,230],[250,229],[249,229],[244,227],[242,226],[240,226],[239,226],[239,225],[238,225],[238,224],[238,223],[238,222],[238,221],[238,219],[239,218],[240,217],[240,214],[241,213],[242,211],[244,210],[247,209],[249,209],[253,208],[255,207],[256,206],[257,205],[261,205],[263,204],[265,202],[266,201],[269,201],[270,200],[271,199],[272,199],[273,199],[274,199]]},{"type":"polyline","points":[[362,214],[362,215],[359,217],[358,218],[358,219],[358,220],[357,220],[357,221],[356,221],[356,222],[355,223],[354,225],[353,226],[351,227],[351,228],[349,230],[347,231],[346,234],[345,235],[342,237],[341,239],[339,243],[338,244],[337,245],[335,246],[334,247],[333,248],[333,250],[332,251],[332,252],[331,253],[329,253],[327,255],[326,255],[326,256],[325,256],[324,256],[323,258],[322,259],[321,260],[320,260],[317,261],[316,262],[315,263],[313,264],[312,265],[308,267],[306,268],[305,269],[305,270],[304,271],[304,272],[304,273],[305,273],[307,273],[308,273],[309,273],[310,272],[312,272],[313,272],[313,273],[313,276],[312,277],[312,279],[310,280],[310,283],[310,284],[310,287],[310,288],[310,291],[312,292],[312,294],[312,296],[312,297],[312,298],[312,300],[312,301],[314,303],[315,304],[316,303],[318,302],[320,300],[321,297],[322,295],[323,294],[324,294],[324,295],[324,297],[325,298],[330,298],[333,297],[334,296],[335,296],[337,295],[339,294],[340,293],[341,292],[342,291],[343,289],[343,288],[345,287],[345,286],[345,285],[346,285],[346,283],[347,281],[347,280],[348,279],[348,278],[348,276],[348,275],[348,273],[348,272],[349,271],[349,270],[350,269],[350,267],[351,265],[353,264],[354,264],[354,262],[355,262],[356,262],[358,262],[359,261],[362,261],[364,261],[366,260],[368,260],[373,259],[375,258],[378,256],[381,255],[383,254],[384,253],[386,252],[387,251],[388,251],[388,250],[388,248],[388,247],[388,244],[388,243],[388,239],[386,237],[384,234],[384,231],[383,229],[382,228],[381,226],[379,223],[376,221],[375,221],[370,218],[367,215],[366,215],[365,215],[363,214],[362,214],[360,214],[358,214]]},{"type":"style","width":22,"stroke":"#FFFFFF","fill":"#FFFFFF"},{"type":"polyline","points":[[231,247],[230,250],[230,252],[229,254],[229,255],[228,258],[228,259],[228,261],[229,263],[229,265],[229,268],[231,270],[231,272],[232,276],[234,279],[235,283],[233,285],[231,287],[228,289],[226,292],[226,293],[226,295],[226,298],[227,301],[228,304],[228,306],[228,308],[229,308],[231,306],[233,303],[234,301],[234,298],[235,297],[235,295],[235,294],[235,295],[235,300],[231,303],[234,307],[230,309],[228,310],[223,311],[224,312],[226,315],[229,318],[231,320],[232,320],[233,320],[234,317],[235,314],[235,312],[237,312],[237,311],[237,310],[238,310],[238,311],[239,312],[242,315],[246,319],[247,321],[248,322],[248,324],[249,325],[249,326],[250,328],[251,329],[251,330],[252,333],[252,334],[254,335],[254,336],[254,338],[254,341],[254,342],[254,344],[252,346],[251,350],[250,351],[250,353],[248,355],[248,357],[246,358],[244,360],[241,362],[241,365],[239,367],[238,368],[236,370],[236,373],[235,375],[233,377],[233,379],[232,382],[231,383],[231,384],[231,386],[231,387],[231,390],[232,391],[236,393],[239,395],[244,397],[245,395],[246,393],[247,392],[247,391],[249,389],[250,387],[249,387],[243,391],[240,393],[238,393],[236,394],[235,394],[233,394],[231,395],[228,396],[227,396],[227,397],[230,397],[240,395],[248,390],[250,385],[255,383],[257,382],[260,381],[264,380],[267,379],[271,379],[275,379],[279,376],[281,375],[283,373],[284,372],[284,371],[285,369],[287,367],[287,366],[287,365],[287,364],[287,363],[287,362],[287,360],[287,359],[287,356],[287,354],[285,351],[283,349],[281,347],[279,344],[276,343],[275,342],[275,341],[274,340],[274,339],[273,336],[273,335],[275,336],[276,336],[276,335],[278,334],[278,332],[278,331],[279,330],[278,330],[279,330],[279,331],[279,332],[280,333],[281,334],[282,335],[282,336],[284,337],[284,339],[286,340],[287,340],[286,339],[284,339],[283,339],[282,337],[281,336],[281,335],[280,332],[279,331],[278,328],[276,326],[275,324],[275,323],[274,320],[274,318],[273,315],[273,312],[273,310],[273,308],[273,306],[273,303],[274,302],[275,300],[275,299],[276,297],[278,295],[278,292],[279,291],[279,290],[279,289],[279,286],[279,285],[279,283],[279,282],[279,281],[278,278],[278,277],[278,276],[278,275],[276,275],[276,276],[276,278],[276,282],[276,284],[276,287],[278,290],[278,292],[278,294],[279,295],[280,299],[281,301],[282,303],[279,303],[278,306],[280,309],[280,311],[281,315],[281,317],[281,319],[282,323],[282,327],[283,332],[284,336],[286,340],[287,343],[289,347],[289,348],[290,351]]},{"type":"polyline","points":[[284,275],[284,274],[285,274],[285,273],[287,273],[289,273],[287,273],[286,273],[287,273],[287,274],[286,275],[286,277],[287,278],[289,278],[290,278],[290,279],[291,279],[292,279],[292,280],[293,280],[293,281],[293,282],[294,283],[294,285],[295,287],[296,288],[296,289],[296,290],[296,291],[296,293],[298,295],[298,296],[298,297],[299,298],[299,300],[299,303],[298,305],[296,307],[296,308],[295,313],[295,316],[295,320],[296,321],[296,322],[298,323],[300,327],[301,327],[302,327],[304,327],[306,324],[306,322],[307,322],[307,321],[307,320],[308,319],[308,318],[308,316],[307,315],[307,314],[306,312],[307,312],[307,313],[308,315],[308,319],[309,322],[309,326],[310,329],[310,331],[310,333],[311,333],[312,333],[315,330],[315,324],[315,323],[316,322],[317,320],[318,319],[318,318],[319,316],[320,315],[322,313],[324,312],[327,313],[333,317],[334,318],[334,321],[334,326],[334,329],[333,332],[331,336],[330,340],[329,343],[327,342],[327,340],[326,344],[325,348],[324,352],[325,353],[325,354],[325,355],[326,360],[326,367],[326,369],[328,374],[329,378],[335,381],[337,382],[340,382],[344,382],[346,378],[348,375],[349,373],[352,368],[354,365],[356,359],[354,350],[349,343],[345,337],[344,333],[344,330],[344,327],[344,325],[347,324],[348,323],[348,322],[349,322],[351,324],[355,325],[356,328],[355,335],[348,346],[338,355],[330,359],[329,360],[331,362],[348,360],[360,356],[365,350],[365,347],[365,344],[365,339],[366,337],[367,333],[368,330],[369,329],[370,327],[370,325],[371,324],[371,323],[373,322],[373,324],[374,330],[375,339],[375,348],[375,354],[375,357],[373,359],[367,365],[364,366],[361,368],[360,368],[360,370]]},{"type":"style","width":2,"stroke":"#000000","fill":"#FFFFFF"},{"type":"polyline","points":[[239,236],[238,237],[237,237],[237,239],[237,240]]},{"type":"polyline","points":[[278,232],[275,232],[273,231],[272,231],[271,231],[270,231],[268,231],[265,231],[262,232],[259,232],[258,232],[256,231],[253,230],[250,229],[249,228],[247,228],[246,227],[244,227],[242,227],[241,228],[240,229],[239,229],[238,230],[238,231],[236,232],[235,235],[235,236],[234,237],[234,238],[234,240],[234,241],[234,244],[234,245],[235,247],[236,250],[236,252],[238,254],[239,255],[240,257],[241,258],[241,261],[243,263],[243,265],[244,266],[244,268],[246,269],[246,270],[247,272],[248,274],[249,277],[250,278],[250,280],[252,283],[254,287],[255,289],[256,291],[257,294],[258,296],[259,299],[261,303],[264,307],[265,310],[267,312],[266,313],[267,315],[268,316],[269,318],[269,319],[271,320],[272,321],[273,322],[275,324],[276,326],[276,327],[276,328],[277,329],[277,330],[277,331],[277,332],[277,334],[277,335],[277,336],[276,336],[276,337],[275,337],[275,338],[275,339],[274,340],[274,341],[274,343],[273,343],[273,344],[273,345],[274,345],[276,346],[276,347],[277,347],[276,347],[275,347],[274,347],[273,347],[272,347],[272,348],[271,349],[271,352],[269,353],[269,354],[269,355],[269,356],[269,357],[271,357],[271,359],[269,359],[272,359],[274,359],[276,359],[277,359],[279,359],[276,358],[279,360],[281,361],[282,361],[285,362],[286,362],[291,365],[292,365],[293,365],[295,365],[296,365],[297,363],[300,363],[300,362],[302,362],[302,360],[302,359],[302,358],[302,357],[301,357],[300,357],[298,357],[297,357],[297,358],[298,359],[298,360],[300,361],[302,361],[302,362],[303,362],[304,362],[305,362],[306,362],[308,362],[309,362],[310,361],[311,361],[311,360],[312,360],[312,359],[313,359],[314,359],[313,358],[312,358],[312,357],[312,355],[313,354],[312,353],[313,352],[313,351],[314,351],[316,351],[316,350],[316,349],[317,349],[317,348],[318,348],[316,345],[316,344],[314,343],[314,342],[312,340],[312,338],[311,337],[311,336],[311,335],[311,334],[311,333],[310,332],[310,330],[310,329],[310,328],[310,327],[309,326],[309,325],[309,324],[308,322],[308,321],[308,319],[308,317],[308,316],[306,312],[306,311],[306,309],[306,305],[306,303],[306,301],[306,297],[305,294],[305,292],[305,289],[305,287],[305,285],[304,283],[304,280],[304,278],[304,276],[304,274],[304,272],[303,270],[303,268],[303,267],[302,266],[302,264],[302,263],[301,263],[300,261],[298,261],[297,260],[296,260],[295,260],[294,260],[293,260],[292,260],[290,259],[289,259],[288,259],[288,258],[287,258],[286,258],[285,258],[285,259],[285,260],[287,260],[285,260],[283,259],[280,259],[280,258],[280,257],[279,257],[279,254],[279,252],[279,251],[278,251],[277,251],[275,250],[277,250],[277,247],[277,245],[278,245],[278,244],[278,243],[277,242],[275,241],[273,239],[272,239],[271,238],[270,237],[267,235],[265,233],[263,231],[262,230],[260,229],[258,228],[257,228],[256,228],[255,228],[253,228],[249,228],[248,228],[247,227],[246,227],[245,227],[244,227]]},{"type":"style","width":1,"stroke":"#000000","fill":"#FFFFFF"},{"type":"polyline","points":[[306,279],[308,279]]},{"type":"polyline","points":[[311,275],[310,275],[309,275],[308,276],[306,276],[305,277],[304,277],[304,278],[303,281],[302,282],[301,282],[300,283],[300,284],[298,286],[297,287],[297,288],[296,290],[295,291],[295,292],[295,293],[294,293],[294,294],[293,294],[293,295],[292,295],[292,296],[291,298],[291,299],[289,301],[288,302],[287,303],[286,304],[286,306],[285,307],[284,308],[281,308],[280,309],[279,310],[277,310],[276,311],[275,312],[273,315],[271,316],[270,317],[269,318],[268,319],[268,321],[265,323],[264,324],[263,326],[261,327],[261,329],[260,331],[259,332],[256,333],[256,334],[255,336],[255,337],[254,337],[254,339],[253,339],[253,340],[252,341],[252,342],[252,343],[251,343],[251,344],[251,345],[250,345],[250,347],[250,348],[250,349],[248,349],[248,350],[248,351],[247,351],[247,352],[247,353],[247,354],[246,356],[246,357],[246,358],[246,359],[246,360],[246,361],[246,362],[246,364],[246,365],[246,366],[246,367],[245,366],[245,367],[245,368],[245,369],[246,369],[246,370],[248,372],[251,373],[252,373],[252,374],[254,375],[255,375],[256,375],[256,376],[258,376],[259,376],[260,376],[261,376],[262,376],[263,376],[264,375],[265,375],[267,375],[268,375],[269,375],[270,375],[271,375],[273,375],[275,376],[276,376],[277,376],[278,377],[280,378],[281,378],[283,379],[284,379],[286,381],[287,382],[289,383],[292,383],[292,384],[294,384],[296,384],[298,384],[300,383],[301,383],[301,382],[303,382],[304,381],[305,379],[306,379],[308,378],[310,377],[311,376],[312,376],[313,375],[313,374],[313,373],[314,372],[314,370],[314,368],[314,367],[314,365],[314,362],[314,361],[314,360],[313,360],[312,360],[311,360],[310,360],[309,360],[308,360],[305,360],[304,359],[303,359],[302,358],[302,356],[301,353],[301,352],[301,351],[300,351],[298,351],[297,351],[296,351],[295,351],[293,351],[292,351],[291,351],[291,350],[291,349],[291,348],[291,347],[292,347],[292,345],[293,345],[293,344],[294,343],[295,343],[296,342],[297,342],[297,341],[298,341],[298,340],[300,340],[301,339],[302,337],[304,337],[304,336],[305,336],[305,335],[306,335],[306,334],[308,333],[309,332],[309,331],[310,329],[311,329],[312,328],[313,327],[314,326],[316,326],[317,326],[318,324],[319,324],[320,324],[322,323],[323,321],[326,321],[327,320],[329,319],[330,318],[335,318],[336,317],[337,317],[339,317],[341,316],[342,315],[344,314],[346,312],[349,312],[351,311],[353,310],[355,309],[358,308],[360,307],[362,306],[363,304],[366,303],[368,302],[370,300],[374,298],[375,296],[376,294],[377,292],[378,288],[379,287],[380,285],[382,283],[384,279],[385,277],[385,275],[386,274],[387,271],[387,270],[387,268],[387,267],[387,266],[387,265],[387,263],[387,261],[386,259],[384,259],[384,258],[383,258],[381,258],[378,258],[377,258],[376,257],[375,257],[372,257],[370,257],[367,257],[361,257],[359,257],[354,257],[352,257],[348,258],[347,259],[347,260],[346,261],[345,262],[345,264],[345,265],[345,266],[345,268],[344,270],[343,272],[343,274],[343,275],[342,276],[340,277],[339,280],[338,282],[337,284],[337,285],[336,287],[335,289],[334,290],[332,291],[330,291],[329,292],[328,292],[326,292],[323,292],[322,292],[320,292],[317,290],[314,287],[313,286],[312,283],[312,280],[311,276],[311,273],[311,272]]},{"type":"style","width":20,"stroke":"#C48000","fill":null},{"type":"polyline","points":[[231,263],[230,263],[230,264],[229,263],[228,263],[227,263],[226,263],[225,263],[224,263],[222,263],[221,263],[221,264],[220,264],[219,264],[218,265],[217,265],[216,266],[213,267],[211,267],[209,268],[205,268],[201,268],[195,268],[189,270],[185,271],[182,272],[178,273],[173,274],[168,276],[164,279],[158,281],[153,283],[145,286],[143,287],[138,290],[136,291],[130,291],[128,292],[126,293],[121,293],[118,293],[114,293],[109,293],[106,293],[102,293],[98,293],[96,293],[93,293],[89,293],[87,293],[85,293],[81,293],[80,293],[78,293],[77,293]]},{"type":"polyline","points":[[425,305],[426,305],[426,307],[428,307],[428,308],[432,308],[435,309],[436,310],[440,311],[442,312],[444,312],[448,315],[452,317],[455,317],[464,321],[469,323],[472,323],[476,323],[480,323],[482,323],[484,323],[492,325],[500,326],[503,326],[508,327],[510,327],[508,327],[514,330],[518,330],[515,330],[521,332],[524,333],[528,337],[538,344],[543,347],[549,348],[561,349],[569,349],[570,349],[576,349],[586,349],[588,349],[589,349],[596,352],[597,352],[600,353],[603,355],[606,356],[606,357],[608,357],[608,358],[606,360]]},{"type":"polyline","points":[[234,262],[236,262],[236,264],[237,265],[238,266],[238,267],[238,268],[240,269],[240,270],[238,270],[238,272],[238,273],[238,274],[238,275],[238,277],[238,280],[238,281],[238,283],[240,285],[241,287],[241,289],[242,291],[243,293],[243,295],[244,299],[245,301],[245,302],[245,303],[245,306],[245,307],[246,309],[246,310],[246,311],[247,313],[249,313],[247,311],[249,311],[249,310],[249,309],[249,308],[249,307],[249,306],[249,305],[249,303],[249,301],[249,300],[249,299],[249,300],[250,301],[249,302],[250,305],[251,307],[252,308],[252,309],[252,310],[253,311],[251,311],[253,316],[255,317],[255,318],[252,318],[251,317],[250,316],[231,308],[219,307],[207,308],[191,313],[176,314],[156,314],[142,314],[132,314],[128,312],[128,307],[142,302],[193,300],[234,303],[243,301],[219,299],[179,299],[154,297],[151,297],[152,295],[166,292],[188,289],[200,288],[204,285],[205,285],[213,285],[217,283],[218,282],[221,282],[222,282],[220,282],[211,285],[175,291],[137,302],[129,303],[132,302],[134,302],[157,302],[187,305],[190,306],[186,308],[168,316],[155,319],[154,319],[162,319],[174,319],[179,319],[180,319],[188,318],[203,318],[215,318],[215,317],[204,322],[186,322],[171,323],[184,322],[219,320],[225,319],[223,319],[220,319],[222,319],[226,319],[227,319],[223,319]]},{"type":"polyline","points":[[395,302],[534,349]]},{"type":"polyline","points":[[381,314],[509,354]]},{"type":"polyline","points":[[503,358],[364,318]]},{"type":"style","width":20,"stroke":"#C4C400","fill":null},{"type":"polyline","points":[[361,312],[361,313],[359,313],[358,314],[358,316],[358,317],[357,317],[357,318],[356,318],[355,319],[354,319],[353,319],[351,319],[350,319],[350,320],[349,320],[348,321],[348,322],[348,323],[351,323],[359,323],[364,325],[369,325],[375,327],[388,327],[397,328],[399,329],[406,332],[406,333],[404,333],[405,333],[406,335],[402,336],[392,336],[377,336],[362,336],[354,334],[352,333],[348,332],[346,331],[343,330],[341,328],[340,326],[339,326],[338,327],[334,328],[332,330],[331,331],[329,332],[326,333],[325,333],[325,334],[323,334],[321,334],[321,335],[322,336],[324,337],[326,339],[331,341],[331,342],[333,342],[333,344],[333,345],[335,345],[352,345],[369,345],[389,350],[406,354],[423,355],[428,355],[429,357],[420,358],[403,358],[400,358],[404,358],[429,358],[453,359],[459,360],[458,360]]},{"type":"polyline","points":[[433,340],[435,340],[446,344],[465,353],[473,357],[492,362],[501,367],[503,368]]},{"type":"polyline","points":[[326,346],[324,346],[324,347],[324,348],[324,351],[324,352],[326,352],[327,353],[327,354],[327,355],[328,356],[328,357],[327,359],[327,361],[327,362],[328,364],[328,366],[328,369],[329,369],[338,367],[365,367],[382,367],[394,372],[423,379],[450,389],[444,388]]},{"type":"polyline","points":[[342,356],[344,356],[350,356],[364,356],[386,359],[402,360]]},{"type":"polyline","points":[[237,301],[235,301],[231,304],[222,308],[214,310],[212,312],[212,313]]},{"type":"polyline","points":[[248,295],[249,297],[251,299],[251,301],[252,302],[252,304],[253,305],[253,306],[253,307],[254,309],[254,310],[254,311],[254,312],[254,313],[253,314],[252,317],[251,319],[248,321],[246,322],[242,323],[237,327],[230,329],[215,335],[205,341],[191,348],[178,353],[173,356],[171,356],[171,357],[170,357]]},{"type":"polyline","points":[[236,317],[235,317],[229,318],[226,319],[221,320],[212,320],[205,322],[202,323],[198,324],[193,324],[189,324],[187,325],[180,325],[173,325],[170,325],[169,326],[172,326],[178,327],[187,330],[189,331],[193,331],[196,331],[197,331],[201,331],[208,331],[210,331],[211,330],[212,330],[213,329],[214,329],[216,328],[217,328],[218,328],[219,326],[220,325],[221,325],[221,324],[222,324],[222,323],[224,322],[227,321],[237,321],[239,321],[240,322],[240,323],[241,325],[244,325],[245,325],[247,325],[247,326],[247,328],[247,329],[246,331],[246,333],[246,334],[245,336],[244,338],[241,341],[239,342],[237,344],[235,345],[232,346],[229,347],[227,349],[224,350],[222,352],[221,353],[221,354],[221,350],[224,348],[224,347],[220,347],[214,349],[204,354],[200,357],[198,358],[202,358],[212,358],[224,358],[227,358],[228,358],[234,358],[234,357],[235,357],[235,358],[233,360],[232,361],[231,363],[229,366],[229,367],[229,368],[229,369],[229,372],[231,375],[234,377],[237,379],[239,379],[241,379],[242,381],[245,382],[247,383],[248,383],[251,384],[255,384],[258,384],[260,384],[263,384],[267,385],[270,386],[274,387],[279,388],[280,389],[284,391],[291,393],[293,394],[296,395],[307,398],[310,397],[311,395],[312,392],[313,389],[317,386],[322,382],[325,381],[326,380],[326,379],[326,380],[324,383],[321,387],[320,388],[323,387],[330,384],[334,381]]},{"type":"style","width":3,"stroke":"#40C400","fill":null},{"type":"polyline","points":[[428,343],[429,341],[433,334],[446,319],[455,313]]},{"type":"polyline","points":[[440,347],[446,344],[465,329],[476,319]]},{"type":"polyline","points":[[437,333],[441,327],[459,315],[476,305]]},{"type":"polyline","points":[[464,346],[470,341],[492,332],[510,322]]},{"type":"polyline","points":[[470,358],[486,350],[511,340],[557,322]]},{"type":"polyline","points":[[514,350],[522,348],[541,340],[557,331],[562,328]]},{"type":"polyline","points":[[540,354],[541,352],[550,349],[563,345]]},{"type":"polyline","points":[[575,345],[587,339],[592,334]]},{"type":"polyline","points":[[117,250],[118,251],[127,262],[140,282],[156,305],[168,319]]},{"type":"polyline","points":[[171,285],[169,292],[174,309],[179,320],[180,322]]},{"type":"polyline","points":[[203,280],[203,282],[203,292],[203,297]]},{"type":"polyline","points":[[218,275],[218,278],[219,290],[219,294]]},{"type":"polyline","points":[[233,287],[234,292],[234,295],[234,297]]},{"type":"polyline","points":[[176,242],[183,258],[186,270],[188,274]]},{"type":"polyline","points":[[211,252],[212,257],[212,261],[213,263],[219,257]]},{"type":"polyline","points":[[224,251],[224,263],[223,270]]},{"type":"polyline","points":[[497,259],[497,263],[493,272],[486,289],[480,303],[480,310]]},{"type":"polyline","points":[[505,288],[505,290],[498,305],[492,320],[496,323],[508,315]]},{"type":"polyline","points":[[517,304],[515,309],[514,310],[501,311]]},{"type":"polyline","points":[[480,305],[480,308],[480,312],[482,318],[484,315],[489,306],[493,299],[494,298],[494,303],[494,314],[496,321],[496,322],[499,322],[509,316],[520,310],[519,308],[518,317],[517,323],[529,313]]},{"type":"polyline","points":[[528,332],[530,332],[536,331],[551,326],[562,322]]},{"type":"polyline","points":[[563,354],[571,348],[590,340],[603,334]]},{"type":"polyline","points":[[610,346],[613,343],[622,339],[632,332]]},{"type":"polyline","points":[[120,281],[121,281],[121,278],[123,275],[124,273],[126,271],[127,271],[132,274],[130,274],[134,276],[136,274],[138,269],[140,266],[140,264],[142,267],[144,270],[149,273],[151,274],[153,271],[156,264],[156,255],[160,241],[162,225],[162,222],[166,229],[174,245],[183,262],[187,269]]},{"type":"polyline","points":[[166,250],[167,252],[170,257],[172,264],[173,270],[176,271],[183,266]]},{"type":"polyline","points":[[193,252],[193,257],[193,260],[196,260]]},{"type":"polyline","points":[[205,256],[204,257],[205,259],[205,260]]},{"type":"polyline","points":[[222,253],[222,254],[225,255]]},{"type":"polyline","points":[[229,254],[229,255]]},{"type":"polyline","points":[[469,316],[469,317],[469,318],[469,316],[470,304],[475,282],[484,264],[490,252],[494,247],[492,256],[491,271],[478,297],[474,316],[471,322]]},{"type":"style","width":3,"stroke":"#40C400","fill":"#00C400"},{"type":"polyline","points":[[476,317],[476,315],[478,313],[482,307],[487,295],[494,284],[498,275],[501,271],[506,264],[508,260],[508,258],[507,263],[506,265],[504,270],[500,281],[492,297],[489,306]]},{"type":"polyline","points":[[486,323],[489,320],[496,315],[506,302],[515,286],[522,273],[524,269],[524,268]]},{"type":"polyline","points":[[504,332],[506,328],[510,326],[514,321],[521,312],[530,299],[534,290]]},{"type":"polyline","points":[[512,343],[517,341],[529,324],[543,298],[558,275],[561,268]]},{"type":"polyline","points":[[531,332],[530,342],[530,347],[534,346],[548,334],[561,318]]},{"type":"polyline","points":[[415,321],[415,320],[416,314],[416,303],[420,280],[434,248],[447,225],[457,207],[464,196],[465,195],[461,211],[447,242],[433,273],[423,293],[416,307],[412,311]]},{"type":"polyline","points":[[423,312],[426,308],[432,298],[443,280],[453,260],[456,255],[456,257],[454,275],[449,301],[443,313],[438,322],[433,324],[433,323]]},{"type":"polyline","points":[[475,298],[476,298],[481,291],[495,272],[508,250],[515,237],[516,236],[505,262],[487,299],[472,325],[467,335],[466,335]]},{"type":"polyline","points":[[208,299],[208,293],[208,285],[200,254],[200,228],[200,212],[204,198],[206,194],[207,190],[211,190],[214,191],[215,203],[217,232],[217,260],[215,280]]},{"type":"polyline","points":[[202,286],[200,280],[196,270],[188,248],[185,231],[184,212],[182,192],[182,173]]},{"type":"polyline","points":[[180,215],[180,229],[181,255],[181,269]]},{"type":"polyline","points":[[181,280],[182,279],[182,259],[179,209],[173,162],[170,118],[170,104],[169,99]]},{"type":"polyline","points":[[155,250],[156,250],[157,249],[157,237],[155,215],[152,191],[150,182],[151,200],[160,238],[172,270],[183,298],[185,303],[182,297],[174,281]]},{"type":"polyline","points":[[140,246],[141,249],[140,255],[136,263],[136,274],[147,295],[153,302],[154,304],[150,296],[137,280],[106,244]]},{"type":"polyline","points":[[216,274],[216,273],[218,270],[222,258],[227,247],[231,238],[234,233],[236,239],[236,248],[234,261]]},{"type":"polyline","points":[[232,266],[233,266],[236,268],[238,269],[239,269]]},{"type":"polyline","points":[[318,359],[318,356],[307,336],[299,312],[297,284],[303,257],[305,259],[306,273],[306,287],[308,312],[306,334]]},{"type":"polyline","points":[[328,384],[331,382],[339,368],[353,327],[357,285]]},{"type":"polyline","points":[[366,298],[366,317],[367,345],[360,366],[357,377]]},{"type":"polyline","points":[[398,356],[407,360],[414,364],[422,364],[442,349]]},{"type":"polyline","points":[[124,287],[124,285],[124,283],[126,276],[138,263],[147,235],[149,213],[152,190],[156,181],[156,173],[153,167],[148,162],[140,162],[129,166],[125,166],[127,160],[132,151],[131,137],[127,126],[120,124],[102,130],[97,132],[93,132],[90,130],[86,122],[82,110],[75,99],[63,95],[53,95],[42,103],[31,110],[27,121],[24,128],[23,132],[20,135],[20,137],[18,138],[13,141],[9,144],[7,149],[3,152],[1,159],[1,167],[1,176],[4,188],[11,202],[18,209],[18,211],[18,214],[15,217],[11,223],[9,227],[8,231],[7,236],[5,241],[4,249],[4,254],[5,258],[5,262],[6,270],[15,280],[21,284],[26,286],[39,293],[52,295],[65,298],[73,298],[77,298],[96,297],[106,297],[111,296],[123,294],[133,293],[140,288],[146,276],[152,263],[155,257],[160,256]]},{"type":"style","width":3,"stroke":"#40C400","fill":"#C4FF00"},{"type":"polyline","points":[[24,189],[24,188],[30,179],[41,174],[50,173],[67,178],[79,185],[79,190],[77,199],[75,204],[73,211],[75,211],[89,208],[119,208],[126,208],[127,211],[130,220],[130,227],[128,230],[128,231],[130,231],[158,233],[166,241],[171,254],[174,263],[172,270],[166,276],[158,277],[157,277],[154,277],[151,281],[143,283],[122,283],[110,282],[104,280],[99,278],[93,278],[90,281],[85,283],[81,288],[79,289],[78,292],[77,297],[77,300],[77,305],[73,311],[65,315],[56,317],[48,317],[41,316],[35,312],[31,311],[33,311],[27,304],[21,294],[18,285],[14,271],[9,262],[3,253],[0,247],[0,243],[0,235],[0,230],[0,220],[0,208],[0,199],[0,193],[5,187],[10,184],[15,182]]},{"type":"polyline","points":[[514,330],[513,329],[513,327],[513,321],[513,315],[515,311],[519,304],[526,292],[533,282],[539,276],[546,272],[552,271],[556,271],[556,270],[564,274],[567,275],[567,274],[570,270],[573,260],[576,248],[580,231],[587,220],[594,215],[599,218],[604,221],[606,220],[607,216],[611,210],[615,204],[619,202],[626,200],[638,200],[653,205],[659,207],[660,208],[662,208],[665,206],[669,201],[674,191],[683,173],[683,160],[683,159],[683,165],[683,170],[683,176],[683,182],[683,193],[683,204],[683,223],[683,243],[683,264],[683,282],[683,301],[683,318],[683,324],[683,334],[683,346],[683,361],[683,371],[683,379],[683,386],[683,393],[683,400],[683,402],[679,402],[672,400],[666,397],[661,393],[656,386],[649,381],[647,380],[644,376],[636,371],[610,364],[590,362],[573,361],[572,361],[571,363],[566,367],[560,368],[551,364],[535,353],[529,346],[528,344],[527,340],[528,340],[527,340],[521,340],[513,336],[503,329],[500,322],[498,312],[497,309]]},{"type":"style","width":11,"stroke":"#FFFFFF","fill":"#FFFFFF"},{"type":"polyline","points":[[291,117],[290,117],[281,122],[276,126],[275,129],[274,129],[279,130],[283,127],[288,124],[290,123],[290,124],[288,126],[288,127],[286,127],[288,127],[289,126],[290,126],[292,126],[296,126],[300,127],[301,129],[301,132],[300,134],[299,134],[297,132],[297,131],[298,129],[302,124],[311,121],[319,119],[317,121],[307,127],[302,129],[298,129],[294,129],[294,130],[294,129],[294,127],[295,125],[296,123],[298,121],[303,115],[307,113],[312,110],[315,109],[318,107],[320,106]]},{"type":"polyline","points":[[288,154],[289,154],[292,153],[296,153],[300,153],[303,153],[305,153],[309,153],[310,153],[311,153],[313,153],[318,156],[322,156],[321,157],[315,157],[307,157],[304,158],[303,158],[305,158],[305,157],[309,156],[323,156],[329,153],[331,152],[333,151],[337,149],[340,148],[344,145],[345,142],[347,140],[348,137],[348,135],[349,134],[350,133],[347,137],[335,145],[321,153],[312,154],[307,154],[304,154],[299,154],[292,154],[292,155],[292,156],[291,157],[290,160],[290,161],[295,162],[305,162],[316,162],[325,159],[327,157],[329,154],[333,150],[334,148],[336,145],[337,142],[337,140],[340,139],[342,137],[344,136],[347,134],[349,134],[351,133],[353,133]]},{"type":"style","width":2,"stroke":"#000000","fill":"#FFFFFF"},{"type":"polyline","points":[[311,162],[312,162],[313,161],[313,160],[316,160],[317,159],[318,158],[319,158],[320,156],[321,156],[322,156],[323,155],[325,155],[326,154],[327,154],[328,153],[329,153],[330,153],[330,152],[331,152],[333,152],[333,151],[334,151]]},{"type":"polyline","points":[[276,144],[277,142],[276,140],[278,139],[279,138],[281,137],[284,137],[285,136],[286,136],[287,134],[289,133],[290,132]]},{"type":"polyline","points":[[276,111],[275,112],[270,114],[268,115],[267,116]]},{"type":"polyline","points":[[309,93],[315,92]]},{"type":"style","width":10,"stroke":"#FFFFFF","fill":null},{"type":"polyline","points":[[367,255],[367,258],[366,258],[366,259],[365,259],[364,259],[362,259],[361,258],[360,258],[359,258],[358,258],[357,258],[356,258],[352,258],[350,258],[349,258],[349,260],[348,262],[347,263],[345,266],[345,267],[344,268],[344,269],[343,271],[341,273],[340,275],[339,277],[337,278],[336,279],[335,280],[333,281],[332,281],[331,283],[328,284],[327,285],[325,286],[323,286],[320,287],[319,287],[317,287],[316,286],[314,285],[312,281],[312,279],[312,278],[312,277],[314,276],[315,276],[316,276],[316,277],[316,280],[317,283],[318,285],[320,286],[323,287],[327,289],[332,292],[334,292],[339,292],[342,288],[343,287],[344,286],[345,285],[346,282],[348,280],[349,278],[350,277],[350,276],[350,274],[351,274],[351,273],[352,272],[351,273],[349,278],[346,279],[345,280],[345,281],[344,282],[346,281],[352,278],[358,274],[359,274],[358,274],[357,276],[355,277],[350,279],[344,282],[342,283],[341,285],[340,285],[337,286],[334,288],[332,289],[328,290],[328,291],[327,291],[328,291],[327,291],[327,290],[328,289],[328,288],[329,288],[330,288],[329,288],[327,289],[325,290],[324,292],[322,293],[321,294],[321,295],[321,296]]},{"type":"style","width":1,"stroke":"#000000","fill":"#80C4FF"},{"type":"polyline","points":[[414,158],[413,157],[411,156],[408,156],[407,156],[404,156],[401,157],[398,158],[396,160],[392,163],[389,164],[387,165],[382,167],[379,170],[376,172],[373,173],[371,174],[367,176],[365,178],[363,179],[358,180],[356,181],[355,182],[351,184],[349,185],[345,186],[342,188],[336,190],[334,190],[332,190],[327,192],[322,192],[318,192],[314,192],[308,192],[306,193],[304,193],[301,193],[296,191],[292,189],[288,188],[285,185],[283,185],[280,184],[278,183],[277,183],[273,182],[272,181],[271,181],[270,181],[269,180],[268,180],[266,180],[265,180],[263,180],[262,181],[261,181],[259,182],[257,183],[256,183],[254,183],[252,184],[249,184],[249,185],[248,185],[247,185],[246,185],[245,185],[244,185],[243,185],[241,185],[240,185],[239,185],[238,185],[237,185],[236,185],[236,184],[235,184],[232,184],[230,185],[229,187],[227,187],[226,188],[224,190],[223,192],[222,193],[221,196],[220,199],[219,201],[218,204],[216,206],[215,208],[215,210],[213,211],[214,215],[213,217],[213,219],[213,223],[214,225],[215,226],[217,227],[219,228],[221,230],[223,231],[227,232],[229,233],[232,233],[236,234],[238,234],[239,234],[245,235],[248,237],[253,237],[256,237],[260,237],[262,237],[266,238],[271,238],[273,238],[276,238],[279,238],[282,238],[283,238],[288,238],[289,238],[290,238],[291,238],[293,238],[295,238],[296,238],[298,239],[304,241],[308,242],[312,244],[313,244],[316,244],[320,244],[324,242],[326,240],[329,239],[334,237],[336,237],[339,236],[344,233],[346,232],[349,231],[352,229],[354,228],[357,226],[362,224],[364,224],[367,224],[372,224],[377,224],[379,224],[384,224],[388,224],[391,224],[394,224],[400,224],[402,222],[404,221],[408,217],[410,215],[411,214],[412,213],[415,209],[417,207],[418,205],[419,201],[422,198],[423,196],[424,193],[425,192],[425,191],[426,190],[426,189],[427,189],[427,188],[428,188],[429,188],[429,187],[431,187],[432,184],[433,182],[433,181],[433,179],[433,176],[433,174],[433,172],[432,168],[431,166],[426,162],[425,160],[423,159],[420,158],[419,158],[417,157],[416,157],[414,156],[412,156],[407,154],[403,152],[402,151],[401,151],[398,150]]},{"type":"style","width":1,"stroke":"#000000","fill":"#FFFFFF"},{"type":"polyline","points":[[263,176],[262,176],[261,176],[259,176],[259,175],[259,174],[258,173],[258,172],[258,171],[258,170],[258,168],[257,167],[257,166],[257,165],[257,164],[256,163],[255,163],[255,162],[254,161],[253,161],[251,159],[250,158],[255,159],[254,159],[253,159],[253,158],[252,158],[251,158],[250,158],[250,157],[249,157],[246,157],[245,157],[244,157],[243,157],[242,157],[241,157],[240,157],[238,157],[237,157],[236,157],[235,157],[234,157],[233,157],[232,158],[232,159],[232,161],[231,161],[231,162],[231,161],[229,159],[228,159],[227,159],[226,159],[226,161],[225,161],[225,162],[225,163],[224,164],[223,164],[221,164],[220,165],[219,165],[219,166],[219,167],[219,169],[219,170],[219,171],[219,172],[218,173],[219,173],[220,173],[223,173],[224,173],[225,173],[224,173],[223,173],[221,173],[221,174],[220,174],[220,177],[221,178],[221,180],[223,181],[224,182],[225,183],[226,185],[227,185],[228,185],[229,185],[231,183],[232,183],[233,183],[234,183],[235,183],[236,183],[237,183],[238,183],[240,183],[241,183],[244,185],[247,186],[248,186],[250,186],[251,186],[252,186],[253,185],[254,185],[257,184],[259,182],[260,181],[261,181],[261,180],[262,179],[262,178]]},{"type":"style","width":1,"stroke":"#000000","fill":null},{"type":"polyline","points":[[242,162],[241,162],[240,163]]},{"type":"polyline","points":[[234,166],[233,166],[231,166],[227,167]]},{"type":"polyline","points":[[336,147],[338,146],[340,145],[341,145]]}]}</script>
+  <script>
+    (() => {
+      'use strict';
+
+      const drawingDocument = JSON.parse(document.querySelector('#drawing-source').textContent);
+      const LOGICAL_WIDTH = drawingDocument.canvas.width;
+      const LOGICAL_HEIGHT = drawingDocument.canvas.height;
+      const SAMPLE_COUNT = 16;
+      const ACCEPT_AVERAGE_ERROR = 30;
+      const ACCEPT_ENDPOINT_ERROR = 50;
+      const MAX_POINT_ERROR = 90;
+      const POINT_STROKE_MAX_LENGTH = 60;
+      const SNAP_DURATION = 360;
+      const PLACEHOLDER_SPEED = 220;
+      const PLACEHOLDER_PAUSE = 400;
+      const PLACEHOLDER_GUIDE_ALPHA = .52;
+
+      function sampleInstruction(instruction) {
+        if (instruction.type === 'polyline') return instruction.points;
+        if (instruction.type !== 'curve') return [];
+        const points = [instruction.start];
+        let start = instruction.start;
+        instruction.segments.forEach(({ control, end }) => {
+          const length = Math.hypot(control[0] - start[0], control[1] - start[1]) + Math.hypot(end[0] - control[0], end[1] - control[1]);
+          const count = Math.max(8, Math.ceil(length / 5));
+          for (let index = 1; index <= count; index++) {
+            const t = index / count;
+            const one = 1 - t;
+            points.push([
+              one * one * start[0] + 2 * one * t * control[0] + t * t * end[0],
+              one * one * start[1] + 2 * one * t * control[1] + t * t * end[1]
+            ]);
+          }
+          start = end;
+        });
+        return points;
+      }
+
+      function buildDrawing(documentData) {
+        let style = { width: 1, stroke: '#000000', fill: null };
+        const sections = [];
+        documentData.instructions.forEach((instruction) => {
+          if (instruction.type === 'style') {
+            style = { width: Number(instruction.width) || 1, stroke: instruction.stroke, fill: instruction.fill };
+          } else if (instruction.type === 'polyline' || instruction.type === 'curve') {
+            const points = sampleInstruction(instruction);
+            const xs = points.map((point) => point[0]);
+            const ys = points.map((point) => point[1]);
+            const bounds = { left: Math.min(...xs), right: Math.max(...xs), top: Math.min(...ys), bottom: Math.max(...ys) };
+            sections.push({ ...style, instruction, points, bounds });
+          }
+        });
+        return sections;
+      }
+
+      const drawing = buildDrawing(drawingDocument);
+
+      const canvas = document.querySelector('#trainer-canvas');
+      const workspace = document.querySelector('#workspace');
+      const ctx = canvas.getContext('2d');
+      const intro = document.querySelector('#intro-screen');
+      const completion = document.querySelector('#completion-screen');
+      const instruction = document.querySelector('#instruction');
+      const instructionText = document.querySelector('#instruction-text');
+      const skipButton = document.querySelector('#skip-button');
+      const restartButton = document.querySelector('#restart-button');
+      const undoButton = document.querySelector('#undo-button');
+      const ringProgress = document.querySelector('#ring-progress');
+      const trackProgress = document.querySelector('#track-progress');
+      const progressPercent = document.querySelector('#progress-percent');
+      const currentLabel = document.querySelector('#stroke-current');
+      const totalLabel = document.querySelector('#stroke-total');
+      const scoreLabel = document.querySelector('#score-value');
+      const scoreMaxLabel = document.querySelector('#score-max');
+      const zoomValue = document.querySelector('#zoom-value');
+      const zoomOut = document.querySelector('#zoom-out');
+      const zoomIn = document.querySelector('#zoom-in');
+
+      let viewport = { width: 1, height: 1, scale: 1, offsetX: 0, offsetY: 0, dpr: 1 };
+      let zoom = 1;
+      let camera = { x: LOGICAL_WIDTH / 2, y: LOGICAL_HEIGHT / 2 };
+      let cameraTarget = { ...camera };
+      let cameraTransition = null;
+      let current = 0;
+      let attempt = null;
+      let activePointer = null;
+      let state = 'intro';
+      let animation = null;
+      let startedAt = 0;
+      let retries = 0;
+      let skips = 0;
+      let experience = 0;
+      let history = [];
+      let feedbackTimer = 0;
+      let hintStartedAt = 0;
+
+      totalLabel.textContent = drawing.length;
+
+      const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+      const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+      const pathLength = (points) => points.slice(1).reduce((sum, point, index) => sum + distance(points[index], point), 0);
+      const maximumExperience = Math.round(drawing.reduce((sum, item) => sum + (pathLength(item.points) <= POINT_STROKE_MAX_LENGTH ? .1 : 10), 0) * 10) / 10;
+      scoreMaxLabel.textContent = String(Math.round(maximumExperience));
+
+      function resample(points, count) {
+        if (!points.length) return [];
+        const total = pathLength(points);
+        if (!total) return Array.from({ length: count }, () => points[0]);
+        const output = [points[0]];
+        let segment = 1;
+        let travelled = 0;
+        for (let sample = 1; sample < count - 1; sample++) {
+          const wanted = total * sample / (count - 1);
+          while (segment < points.length - 1 && travelled + distance(points[segment - 1], points[segment]) < wanted) {
+            travelled += distance(points[segment - 1], points[segment]);
+            segment++;
+          }
+          const start = points[segment - 1];
+          const end = points[segment];
+          const length = distance(start, end) || 1;
+          output.push(mix(start, end, Math.max(0, Math.min(1, (wanted - travelled) / length))));
+        }
+        output.push(points.at(-1));
+        return output;
+      }
+
+      function distanceToPath(point, points) {
+        let best = Infinity;
+        for (let index = 1; index < points.length; index++) {
+          const start = points[index - 1];
+          const end = points[index];
+          const dx = end[0] - start[0];
+          const dy = end[1] - start[1];
+          const squared = dx * dx + dy * dy;
+          const amount = squared ? Math.max(0, Math.min(1, ((point[0] - start[0]) * dx + (point[1] - start[1]) * dy) / squared)) : 0;
+          best = Math.min(best, distance(point, [start[0] + dx * amount, start[1] + dy * amount]));
+        }
+        return best;
+      }
+
+      function experienceForAccuracy(accuracy) {
+        const scale = [[0, 0], [.4, .1], [.6, .2], [.8, 3.4], [.95, 9], [1, 10]];
+        const value = Math.max(0, Math.min(1, accuracy));
+        for (let index = 1; index < scale.length; index++) {
+          if (value <= scale[index][0]) {
+            const [x0, y0] = scale[index - 1];
+            const [x1, y1] = scale[index];
+            return Math.round((y0 + (y1 - y0) * (value - x0) / (x1 - x0)) * 10) / 10;
+          }
+        }
+        return 10;
+      }
+
+      function validate(candidate, item) {
+        const target = item.points;
+        const candidateLength = candidate.length ? pathLength(candidate) : 0;
+        const targetLength = target.length ? pathLength(target) : Infinity;
+        if (candidate.length && candidateLength < 5 && targetLength <= POINT_STROKE_MAX_LENGTH) {
+          return distanceToPath(candidate[0], target) <= MAX_POINT_ERROR ? .1 : false;
+        }
+        if (candidate.length < 2 || candidateLength < 5) return false;
+        const closed = distance(target[0], target.at(-1)) < 5;
+        if (closed) {
+          const expected = resample(target, SAMPLE_COUNT + 1).slice(0, -1);
+          const actual = resample(candidate, SAMPLE_COUNT + 1).slice(0, -1);
+          const variants = [actual, [...actual].reverse()];
+          let averageError = Infinity;
+          for (const variant of variants) {
+            for (let shift = 0; shift < SAMPLE_COUNT; shift++) {
+              const score = variant.reduce((sum, point, index) => sum + distance(point, expected[(index + shift) % SAMPLE_COUNT]), 0) / SAMPLE_COUNT;
+              averageError = Math.min(averageError, score);
+            }
+          }
+          const closureError = distance(candidate[0], candidate.at(-1));
+          const ratio = candidateLength / Math.max(1, targetLength);
+          if (averageError > ACCEPT_AVERAGE_ERROR || closureError > ACCEPT_ENDPOINT_ERROR * 1.25 || ratio < .3 || ratio > 2.7) return false;
+          const accuracy = Math.max(0, 1 - averageError / ACCEPT_AVERAGE_ERROR) * .7 + Math.max(0, 1 - closureError / (ACCEPT_ENDPOINT_ERROR * 1.25)) * .15 + Math.max(0, 1 - Math.abs(Math.log(Math.max(.01, ratio))) / Math.log(3.34)) * .15;
+          return Math.max(.1, Math.min(10, experienceForAccuracy(accuracy)));
+        }
+        const expected = resample(target, SAMPLE_COUNT);
+        const actual = resample(candidate, SAMPLE_COUNT);
+        const score = (points) => points.reduce((sum, point, index) => sum + distance(point, expected[index]), 0) / points.length;
+        const reversed = [...actual].reverse();
+        const forwardScore = score(actual);
+        const reverseScore = score(reversed);
+        const aligned = forwardScore <= reverseScore ? actual : reversed;
+        const averageError = Math.min(forwardScore, reverseScore);
+        const endpointError = Math.max(distance(aligned[0], expected[0]), distance(aligned.at(-1), expected.at(-1)));
+        const ratio = candidateLength / Math.max(1, targetLength);
+        if (averageError > ACCEPT_AVERAGE_ERROR || endpointError > ACCEPT_ENDPOINT_ERROR || ratio < .3 || ratio > 2.7) return false;
+        const accuracy = Math.max(0, 1 - averageError / ACCEPT_AVERAGE_ERROR) * .6 + Math.max(0, 1 - endpointError / ACCEPT_ENDPOINT_ERROR) * .25 + Math.max(0, 1 - Math.abs(Math.log(Math.max(.01, ratio))) / Math.log(3.34)) * .15;
+        const points = experienceForAccuracy(accuracy);
+        return targetLength <= POINT_STROKE_MAX_LENGTH ? .1 : Math.max(.1, Math.min(10, points));
+      }
+
+      function resize() {
+        const rect = workspace.getBoundingClientRect();
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        viewport.width = rect.width;
+        viewport.height = rect.height;
+        viewport.dpr = dpr;
+        updateViewport(true);
+      }
+
+      function focusCurrent(immediate = false) {
+        const target = drawing[current];
+        if (!target?.points.length) {
+          cameraTarget = { x: LOGICAL_WIDTH / 2, y: LOGICAL_HEIGHT / 2 };
+        } else {
+          cameraTarget = { x: (target.bounds.left + target.bounds.right) / 2, y: (target.bounds.top + target.bounds.bottom) / 2 };
+        }
+        if (immediate) {
+          camera = { ...cameraTarget };
+          cameraTransition = null;
+        } else {
+          const travel = Math.hypot(camera.x - cameraTarget.x, camera.y - cameraTarget.y);
+          cameraTransition = {
+            from: { ...camera },
+            fromScale: viewport.scale,
+            startedAt: performance.now(),
+            duration: Math.max(1050, Math.min(1650, 1050 + travel * 2.2))
+          };
+          skipButton.disabled = true;
+        }
+      }
+
+      function updateViewport(immediate = false, time = performance.now()) {
+        const rect = workspace.getBoundingClientRect();
+        const toolbarRect = document.querySelector('.toolbar').getBoundingClientRect();
+        const instructionRect = instruction.getBoundingClientRect();
+        const safeTop = Math.max(18, toolbarRect.bottom - rect.top + 20);
+        const safeBottom = Math.min(rect.height - 18, instructionRect.top - rect.top - 20);
+        const safeLeft = 28;
+        const safeRight = rect.width - 28;
+        const safeWidth = Math.max(160, safeRight - safeLeft);
+        const safeHeight = Math.max(160, safeBottom - safeTop);
+        const baseScale = Math.min(rect.width / LOGICAL_WIDTH, rect.height / LOGICAL_HEIGHT);
+        const requestedScale = baseScale * zoom;
+        const target = drawing[current];
+        let desiredScale = requestedScale;
+        if (target?.points.length) {
+          const targetWidth = Math.max(1, target.bounds.right - target.bounds.left + 48);
+          const targetHeight = Math.max(1, target.bounds.bottom - target.bounds.top + 48);
+          desiredScale = Math.min(requestedScale, safeWidth / targetWidth, safeHeight / targetHeight);
+        }
+        let scale = desiredScale;
+        if (immediate) {
+          camera = { ...cameraTarget };
+          cameraTransition = null;
+        } else if (cameraTransition) {
+          const progress = Math.min(1, (time - cameraTransition.startedAt) / cameraTransition.duration);
+          const eased = progress < .5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+          camera = {
+            x: cameraTransition.from.x + (cameraTarget.x - cameraTransition.from.x) * eased,
+            y: cameraTransition.from.y + (cameraTarget.y - cameraTransition.from.y) * eased
+          };
+          scale = cameraTransition.fromScale + (desiredScale - cameraTransition.fromScale) * eased;
+          if (progress >= 1) {
+            camera = { ...cameraTarget };
+            cameraTransition = null;
+            hintStartedAt = time;
+            if (state === 'ready') skipButton.disabled = false;
+            updateZoomControls();
+          }
+        } else {
+          camera = { ...cameraTarget };
+        }
+        const focusX = (safeLeft + safeRight) / 2;
+        const focusY = (safeTop + safeBottom) / 2;
+        const offsetX = focusX - camera.x * scale;
+        const offsetY = focusY - camera.y * scale;
+        viewport = { width: rect.width, height: rect.height, dpr: viewport.dpr, scale, offsetX, offsetY };
+      }
+
+      function prepare(context, targetCanvas = canvas) {
+        const rect = targetCanvas.getBoundingClientRect();
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        context.setTransform(dpr, 0, 0, dpr, 0, 0);
+        context.clearRect(0, 0, rect.width, rect.height);
+        context.fillStyle = drawingDocument.background;
+        context.fillRect(0, 0, rect.width, rect.height);
+        if (targetCanvas === canvas) {
+          context.translate(viewport.offsetX, viewport.offsetY);
+          context.scale(viewport.scale, viewport.scale);
+        } else {
+          const scale = Math.min(rect.width / LOGICAL_WIDTH, rect.height / LOGICAL_HEIGHT) * .9;
+          context.translate((rect.width - LOGICAL_WIDTH * scale) / 2, (rect.height - LOGICAL_HEIGHT * scale) / 2);
+          context.scale(scale, scale);
+        }
+      }
+
+      function drawPath(context, points, stroke, width, fill = null, alpha = 1, dash = []) {
+        if (!points?.length) return;
+        context.save();
+        context.globalAlpha = alpha;
+        context.beginPath();
+        context.moveTo(points[0][0], points[0][1]);
+        points.slice(1).forEach((point) => context.lineTo(point[0], point[1]));
+        context.lineCap = 'round';
+        context.lineJoin = 'round';
+        context.lineWidth = width;
+        context.strokeStyle = stroke;
+        context.setLineDash(dash);
+        if (fill) { context.fillStyle = fill; context.fill(); }
+        context.stroke();
+        context.restore();
+      }
+
+      function drawOriginal(context, item) {
+        const { instruction } = item;
+        context.save();
+        context.lineWidth = item.width;
+        context.strokeStyle = item.stroke || '#000000';
+        context.fillStyle = item.fill || 'transparent';
+        context.lineCap = 'round';
+        context.lineJoin = 'round';
+        context.beginPath();
+        if (instruction.type === 'polyline') {
+          if (!instruction.points.length) { context.restore(); return; }
+          context.moveTo(...instruction.points[0]);
+          if (instruction.points.length === 1) context.lineTo(instruction.points[0][0] + .01, instruction.points[0][1]);
+          instruction.points.slice(1).forEach((point) => context.lineTo(...point));
+          if (item.fill && instruction.points.length > 2) { context.closePath(); context.fill(); }
+        } else {
+          context.moveTo(...instruction.start);
+          instruction.segments.forEach(({ control, end }) => context.quadraticCurveTo(...control, ...end));
+          if (item.fill) { context.closePath(); context.fill(); }
+        }
+        if (item.stroke) context.stroke();
+        context.restore();
+      }
+
+      function pathPrefix(points, progress) {
+        if (!points.length || progress <= 0) return [];
+        if (progress >= 1) return points;
+        const wanted = pathLength(points) * progress;
+        const output = [points[0]];
+        let travelled = 0;
+        for (let index = 1; index < points.length; index++) {
+          const length = distance(points[index - 1], points[index]);
+          if (travelled + length >= wanted) {
+            output.push(mix(points[index - 1], points[index], (wanted - travelled) / (length || 1)));
+            break;
+          }
+          output.push(points[index]);
+          travelled += length;
+        }
+        return output;
+      }
+
+      function draw(time = performance.now()) {
+        updateViewport(false, time);
+        prepare(ctx);
+        for (let index = 0; index < current; index++) {
+          drawOriginal(ctx, drawing[index]);
+        }
+
+        const target = drawing[current];
+        if (target && state !== 'snapping' && !cameraTransition) {
+          const color = getComputedStyle(document.documentElement).getPropertyValue('--brand').trim() || '#3b82f6';
+          const drawDuration = pathLength(target.points) / PLACEHOLDER_SPEED * 1000;
+          const cycleDuration = drawDuration + PLACEHOLDER_PAUSE;
+          const elapsed = Math.max(0, time - hintStartedAt);
+          const progress = Math.min(1, (elapsed % cycleDuration) / Math.max(1, drawDuration));
+          const blink = .55 + .45 * (.5 + .5 * Math.sin(time / 180));
+          const reveal = Math.min(1, elapsed / 260);
+          const width = Math.max(6, target.width + 4);
+          drawPath(ctx, target.points, color, width, null, PLACEHOLDER_GUIDE_ALPHA * reveal);
+          drawPath(ctx, pathPrefix(target.points, progress), color, width, null, blink * reveal);
+        }
+
+        if (attempt?.length) {
+          const color = state === 'rejected' ? '#F04444' : '#171717';
+          drawPath(ctx, attempt, color, Math.max(2, target?.width || 2), null, 1);
+        }
+
+        if (animation) {
+          const progress = Math.min(1, (time - animation.startedAt) / animation.duration);
+          if (animation.automatic) {
+            const count = Math.max(2, Math.floor(animation.target.length * progress));
+            drawPath(ctx, animation.target.slice(0, count), animation.item.stroke, animation.item.width, null, 1);
+          } else {
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const points = animation.from.map((point, index) => mix(point, animation.to[index], eased));
+            drawPath(ctx, points, animation.item.stroke, animation.item.width, null, 1);
+          }
+          if (progress >= 1) finishAcceptedStroke();
+        }
+        requestAnimationFrame(draw);
+      }
+
+      function eventPoint(event) {
+        const rect = canvas.getBoundingClientRect();
+        return [(event.clientX - rect.left - viewport.offsetX) / viewport.scale, (event.clientY - rect.top - viewport.offsetY) / viewport.scale];
+      }
+
+      function addPointerPoints(event) {
+        const events = typeof event.getCoalescedEvents === 'function' ? event.getCoalescedEvents() : [event];
+        for (const item of events) {
+          const point = eventPoint(item);
+          if (!attempt.length || distance(point, attempt.at(-1)) >= 1.2) attempt.push(point);
+        }
+      }
+
+      function updateProgress() {
+        const percent = Math.round(current / drawing.length * 100);
+        currentLabel.textContent = Math.min(drawing.length, current);
+        progressPercent.textContent = percent + '%';
+        ringProgress.style.strokeDashoffset = String(100 - percent);
+        trackProgress.style.width = percent + '%';
+        scoreLabel.textContent = String(Math.round(experience));
+      }
+
+      function defaultInstruction() {
+        const target = drawing[current];
+        if (!target) return 'Упражнение завершено';
+        return distance(target.points[0], target.points.at(-1)) < 5
+          ? 'Замкнутая линия — начните в любом месте'
+          : 'Начните с любого конца линии';
+      }
+
+      function setInstruction(text, tone = '') {
+        clearTimeout(feedbackTimer);
+        instructionText.textContent = text;
+        instruction.className = 'instruction' + (tone ? ' is-' + tone : '');
+        const use = instruction.querySelector('use');
+        use.setAttribute('href', tone === 'success' ? '#i-check' : '#i-pen');
+      }
+
+      function restoreInstruction(delay = 950) {
+        feedbackTimer = setTimeout(() => setInstruction(defaultInstruction()), delay);
+      }
+
+      function updateZoomControls() {
+        zoomValue.textContent = Math.round(zoom * 100) + '%';
+        const locked = Boolean(cameraTransition) || (state !== 'ready' && state !== 'completed' && state !== 'intro');
+        zoomOut.disabled = locked || zoom <= .5;
+        zoomIn.disabled = locked || zoom >= 2;
+        undoButton.disabled = Boolean(cameraTransition) || state !== 'ready' || current <= 0;
+      }
+
+      function setZoom(value) {
+        if (cameraTransition || (state !== 'ready' && state !== 'completed' && state !== 'intro')) return;
+        zoom = Math.max(.5, Math.min(2, Math.round(value * 4) / 4));
+        hintStartedAt = performance.now();
+        focusCurrent(true);
+        updateZoomControls();
+      }
+
+      function accept(candidate, automatic = false, award = 0) {
+        const target = drawing[current];
+        state = 'snapping';
+        skipButton.disabled = true;
+        restartButton.disabled = true;
+        updateZoomControls();
+        if (automatic) {
+          animation = { automatic: true, award: 0, target: target.points, item: target, startedAt: performance.now(), duration: Math.max(500, Math.min(1450, pathLength(target.points) * 2.1)) };
+        } else {
+          const count = Math.max(30, Math.min(90, Math.ceil(target.points.length * 1.4)));
+          let from = resample(candidate, count);
+          let to = resample(target.points, count);
+          if (distance(from[0], to[0]) + distance(from.at(-1), to.at(-1)) > distance(from[0], to.at(-1)) + distance(from.at(-1), to[0])) to = [...to].reverse();
+          animation = { automatic: false, award, origin: candidate.at(-1), from, to, item: target, startedAt: performance.now(), duration: SNAP_DURATION };
+        }
+        attempt = null;
+      }
+
+      function showAward(points, origin) {
+        if (!points || !origin) return;
+        const badge = document.createElement('div');
+        const shown = points < 1 ? points.toFixed(1) : Math.round(points).toString();
+        badge.className = 'xp-fly';
+        badge.textContent = '+' + shown + ' XP';
+        badge.style.left = (viewport.offsetX + origin[0] * viewport.scale) + 'px';
+        badge.style.top = (viewport.offsetY + origin[1] * viewport.scale) + 'px';
+        document.body.appendChild(badge);
+        badge.addEventListener('animationend', () => badge.remove(), { once: true });
+      }
+
+      function finishAcceptedStroke() {
+        const finishedAnimation = animation;
+        if (finishedAnimation?.award) {
+          experience = Math.round((experience + finishedAnimation.award) * 10) / 10;
+          showAward(finishedAnimation.award, finishedAnimation.origin);
+        }
+        history.push({ award: finishedAnimation?.award || 0, skipped: Boolean(finishedAnimation?.automatic) });
+        animation = null;
+        current++;
+        updateProgress();
+        setInstruction(finishedAnimation?.automatic ? 'Линия добавлена — продолжайте' : 'Точный мазок — очки начислены', 'success');
+        if (current >= drawing.length) {
+          state = 'completed';
+          updateZoomControls();
+          setTimeout(showCompletion, 650);
+          return;
+        }
+        state = 'ready';
+        restartButton.disabled = false;
+        hintStartedAt = performance.now();
+        focusCurrent(false);
+        updateZoomControls();
+        restoreInstruction(1350);
+      }
+
+      function reject() {
+        retries++;
+        state = 'rejected';
+        updateZoomControls();
+        setInstruction('Попробуйте ещё раз — ведите ближе к линии', 'error');
+        setTimeout(() => {
+          attempt = null;
+          state = 'ready';
+          skipButton.disabled = false;
+          restartButton.disabled = false;
+          updateZoomControls();
+          restoreInstruction(700);
+        }, 620);
+      }
+
+      canvas.addEventListener('pointerdown', (event) => {
+        if (cameraTransition || state !== 'ready' || event.button !== 0) return;
+        event.preventDefault();
+        activePointer = event.pointerId;
+        canvas.setPointerCapture(event.pointerId);
+        attempt = [eventPoint(event)];
+        state = 'drawing';
+        skipButton.disabled = true;
+        restartButton.disabled = true;
+        updateZoomControls();
+        setInstruction('Продолжайте движение до конца линии');
+      });
+
+      canvas.addEventListener('pointermove', (event) => {
+        if (activePointer !== event.pointerId || state !== 'drawing') return;
+        event.preventDefault();
+        addPointerPoints(event);
+      });
+
+      canvas.addEventListener('pointerup', (event) => {
+        if (activePointer !== event.pointerId || state !== 'drawing') return;
+        event.preventDefault();
+        addPointerPoints(event);
+        activePointer = null;
+        state = 'validating';
+        const award = validate(attempt, drawing[current]);
+        if (award !== false) accept(attempt, false, award);
+        else reject();
+      });
+
+      canvas.addEventListener('pointercancel', (event) => {
+        if (activePointer !== event.pointerId) return;
+        activePointer = null; attempt = null; state = 'ready'; skipButton.disabled = false; restartButton.disabled = false; updateZoomControls(); setInstruction(defaultInstruction());
+      });
+
+      function reset(showIntro = false) {
+        clearTimeout(feedbackTimer);
+        current = 0; attempt = null; activePointer = null; animation = null; retries = 0; skips = 0; experience = 0; history = []; hintStartedAt = performance.now();
+        state = showIntro ? 'intro' : 'ready';
+        startedAt = showIntro ? 0 : performance.now();
+        skipButton.disabled = showIntro;
+        restartButton.disabled = showIntro;
+        focusCurrent(true);
+        updateProgress();
+        updateZoomControls();
+        setInstruction(defaultInstruction());
+        intro.hidden = !showIntro;
+        completion.hidden = true;
+      }
+
+      skipButton.addEventListener('click', () => {
+        if (cameraTransition || state !== 'ready' || current >= drawing.length) return;
+        skips++;
+        setInstruction('Показываем эту линию', 'success');
+        accept([], true);
+      });
+      undoButton.addEventListener('click', () => {
+        if (cameraTransition || state !== 'ready' || current <= 0) return;
+        const previous = history.pop() || { award: 0, skipped: false };
+        current--;
+        experience = Math.max(0, Math.round((experience - previous.award) * 10) / 10);
+        if (previous.skipped) skips = Math.max(0, skips - 1);
+        hintStartedAt = performance.now();
+        focusCurrent(false);
+        updateProgress();
+        updateZoomControls();
+        setInstruction('Последний мазок отменён', 'success');
+        restoreInstruction(1350);
+      });
+      restartButton.addEventListener('click', () => reset(false));
+      zoomOut.addEventListener('click', () => setZoom(zoom - .25));
+      zoomIn.addEventListener('click', () => setZoom(zoom + .25));
+      document.querySelector('#start-button').addEventListener('click', () => reset(false));
+      document.querySelector('#again-button').addEventListener('click', () => reset(false));
+
+      function formatTime(milliseconds) {
+        const seconds = Math.max(0, Math.round(milliseconds / 1000));
+        return Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+      }
+
+      function renderResult() {
+        const result = document.querySelector('#result-canvas');
+        const rect = result.getBoundingClientRect();
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        result.width = Math.round(rect.width * dpr);
+        result.height = Math.round(rect.height * dpr);
+        const resultContext = result.getContext('2d');
+        prepare(resultContext, result);
+        drawing.forEach((item) => drawOriginal(resultContext, item));
+      }
+
+      function showCompletion() {
+        document.querySelector('#stat-lines').textContent = String(drawing.length - skips);
+        document.querySelector('#stat-score').textContent = Math.round(experience) + ' / ' + Math.round(maximumExperience) + ' XP';
+        document.querySelector('#stat-retries').textContent = String(retries);
+        document.querySelector('#stat-time').textContent = formatTime(performance.now() - startedAt);
+        completion.hidden = false;
+        requestAnimationFrame(renderResult);
+      }
+
+      const resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(workspace);
+      window.addEventListener('resize', resize);
+      reset(true);
+      resize();
+      requestAnimationFrame(draw);
+    })();
+  </script>
+</body>
+</html>
